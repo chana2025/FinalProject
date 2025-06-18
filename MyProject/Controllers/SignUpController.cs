@@ -2,6 +2,8 @@
 using Microsoft.AspNetCore.Mvc;
 using Repository.Entities;
 using Service.Interfaces;
+using System.IO;
+using System.Linq;
 
 namespace MyProject.Controllers
 {
@@ -10,12 +12,10 @@ namespace MyProject.Controllers
     public class SignUpController : ControllerBase
     {
         private readonly IService<CustomerDto> _service;
-        private readonly IConfiguration _config;
 
-        public SignUpController(IService<CustomerDto> service, IConfiguration config)
+        public SignUpController(IService<CustomerDto> service)
         {
             _service = service;
-            _config = config;
         }
 
         [HttpPost]
@@ -35,16 +35,16 @@ namespace MyProject.Controllers
                 signUpDto.Weight = 0;
             }
 
-            // שמירת תמונה בתיקיה
-            string imageDirectory = Path.Combine(Environment.CurrentDirectory, "Images");
-            if (!Directory.Exists(imageDirectory))
-                Directory.CreateDirectory(imageDirectory);
-
-            string imagePath = Path.Combine(imageDirectory, $"{signUpDto.FullName}.jpg");
-
+            // שמירת התמונה בתיקיה והכנת המערך בייטים
             byte[]? imageBytes = null;
-            if (signUpDto.FileImage != null)
+            if (signUpDto.FileImage != null && signUpDto.FileImage.Length > 0)
             {
+                string imageDirectory = Path.Combine(Directory.GetCurrentDirectory(), "Images");
+                if (!Directory.Exists(imageDirectory))
+                    Directory.CreateDirectory(imageDirectory);
+
+                string imagePath = Path.Combine(imageDirectory, $"{signUpDto.FullName}.jpg");
+
                 using (var stream = new FileStream(imagePath, FileMode.Create))
                 {
                     signUpDto.FileImage.CopyTo(stream);
@@ -57,27 +57,6 @@ namespace MyProject.Controllers
                 }
             }
 
-            // בניית רשימת מאכלים אהובים/שנואים
-            var likedFoodPreferences = signUpDto.LikedProductIds?
-                .Select(id => new CustomerFoodPreference
-                {
-                    ProductId = id,
-                    IsLiked = true
-                }).ToList();
-
-            var dislikedFoodPreferences = signUpDto.DislikedProductIds?
-                .Select(id => new CustomerFoodPreference
-                {
-                    ProductId = id,
-                    IsLiked = false
-                }).ToList();
-
-            var allFoodPreferences = new List<CustomerFoodPreference>();
-            if (likedFoodPreferences != null)
-                allFoodPreferences.AddRange(likedFoodPreferences);
-            if (dislikedFoodPreferences != null)
-                allFoodPreferences.AddRange(dislikedFoodPreferences);
-
             // יצירת CustomerDto
             var customer = new CustomerDto
             {
@@ -88,11 +67,12 @@ namespace MyProject.Controllers
                 Email = signUpDto.Email,
                 Height = signUpDto.Height,
                 Weight = signUpDto.Weight,
-                ImagePath = imageBytes,
-                FileImage = signUpDto.FileImage
+                ImagePath = imageBytes
             };
 
-            _service.AddItem(customer);
+            var addedCustomer = _service.AddItem(customer);
+            if (addedCustomer == null)
+                return StatusCode(500, "Failed to add customer.");
 
             return Ok("Customer added successfully.");
         }

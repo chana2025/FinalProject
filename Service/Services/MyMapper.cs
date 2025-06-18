@@ -25,9 +25,9 @@ namespace Service
                 .ForMember(dest => dest.ImageUrl, opt => opt.MapFrom(src => src.FileImage != null ? src.FileImage.FileName : null));
 
             CreateMap<DietType, DietDto>()
-                .ForMember(dest => dest.ImagePath, opt => opt.MapFrom(src => src.ImageUrl))
+                .ForMember(dest => dest.ImageUrl, opt => opt.MapFrom(src => src.ImageUrl))
                 .ReverseMap()
-                .ForMember(dest => dest.ImageUrl, opt => opt.MapFrom(src => src.ImagePath));
+                .ForMember(dest => dest.ImageUrl, opt => opt.MapFrom(src => src.ImageUrl));
 
             CreateMap<WeeklyTracking, WeeklyTrackingDto>().ReverseMap();
             CreateMap<Product, ProductDto>().ReverseMap();

@@ -75,16 +75,12 @@ namespace MyProject.Controllers
                 var imagePath = await _fileUploadService.UploadImageAsync(diet.fileImage, "dietTypes");
 
                 // שומרים את הנתיב בשדה המתאים
-                diet.ImagePath = imagePath;
+                diet.ImageUrl = imagePath;
             }
 
             _service.AddItem(diet);
             return Ok("Diet added successfully.");
         }
-
-
-
-
 
 
 

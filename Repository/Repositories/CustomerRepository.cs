@@ -7,41 +7,59 @@ namespace Repository.Repositories
 {
     public class CustomerRepository : IRepository<Customer>
     {
-        private readonly List<Customer> _customers = new();
-        private int _nextId = 1;
+        private readonly IContext _context;
+
+        public CustomerRepository(IContext context)
+        {
+            _context = context;
+        }
 
         public Customer AddItem(Customer item)
         {
-            item.Id = _nextId++;
-            _customers.Add(item);
+            _context.Customers.Add(item);
+            _context.Save(); // חשוב!
             return item;
         }
 
         public void DeleteItem(int id)
         {
-            var customer = _customers.FirstOrDefault(c => c.Id == id);
+            var customer = _context.Customers.FirstOrDefault(c => c.Id == id);
             if (customer != null)
-                _customers.Remove(customer);
+            {
+                _context.Customers.Remove(customer);
+                _context.Save(); // חשוב!
+            }
         }
 
         public List<Customer> GetAll()
         {
-            return _customers;
+            return _context.Customers.ToList();
         }
 
         public Customer GetById(int id)
         {
-            return _customers.FirstOrDefault(c => c.Id == id)!;
+            return _context.Customers.FirstOrDefault(c => c.Id == id)!;
         }
 
         public void UpdateItem(int id, Customer item)
         {
-            var index = _customers.FindIndex(c => c.Id == id);
-            if (index != -1)
+            var existing = _context.Customers.FirstOrDefault(c => c.Id == id);
+            if (existing != null)
             {
-                item.Id = id;
-                _customers[index] = item;
+                // עדכון שדות בלבד - בלי Attach או Update
+                existing.FullName = item.FullName;
+                existing.Email = item.Email;
+                existing.Password = item.Password;
+                existing.Phone = item.Phone;
+                existing.Role = item.Role;
+                existing.Height = item.Height;
+                existing.Weight = item.Weight;
+                existing.ImagePath = item.ImagePath;
+
+                _context.Save(); // שמירה רק פעם אחת
             }
         }
+
+
     }
 }

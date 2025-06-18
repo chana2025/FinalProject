@@ -12,7 +12,8 @@ namespace Common.Dto
         public string TimeMealsString { get; set; }
 
         public IFormFile? fileImage { get; set; } // התמונה שמועלת ע"י המשתמש
-        public string? ImagePath { get; set; }    // הנתיב לתמונה כפי שנשמר
+       // public string? ImagePath { get; set; }    // הנתיב לתמונה כפי שנשמר
+        public string? ImageUrl { get; set; } // במקום ImagePath
 
 
         // המרה מ-DietType ל-DietDto

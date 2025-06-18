@@ -39,7 +39,7 @@ namespace Service
                     item.fileImage.CopyTo(stream);
                 }
 
-                item.ImagePath = Path.Combine("MyProject", "Images", fileName);
+                item.ImageUrl = Path.Combine("MyProject", "Images", fileName);
 
             }
 
@@ -66,8 +66,32 @@ namespace Service
 
         public void UpdateItem(int id, DietDto item)
         {
-            _repository.UpdateItem(id, _mapper.Map<DietDto, DietType>(item));
+            var existing = _repository.GetById(id);
+            if (existing == null) return;
+
+            existing.DietName = item.DietName;
+            existing.MealsPerDay = item.MealsPerDay;
+            existing.NumCalories = item.NumCalories;
+            existing.SpecialComments = item.SpecialComments;
+            existing.TimeMealsString = item.TimeMealsString;
+
+            if (item.fileImage != null && item.fileImage.Length > 0)
+            {
+                var fileName = Path.GetFileName(item.fileImage.FileName);
+                var directory = Path.Combine(Directory.GetCurrentDirectory(), "MyProject", "Images");
+                Directory.CreateDirectory(directory);
+
+                var savedImagePath = Path.Combine(directory, fileName);
+                using (var stream = new FileStream(savedImagePath, FileMode.Create))
+                {
+                    item.fileImage.CopyTo(stream);
+                }
+
+                // ⬅️ פה מתעדכן הנתיב החדש
+                existing.ImageUrl = Path.Combine("MyProject", "Images", fileName);
+            }
+
+            _repository.UpdateItem(id, existing);
         }
-        //כדאי לשנות לאסינכרוני וכן לעשות טיפול בשגיאות
     }
-}
+    }

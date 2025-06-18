@@ -41,19 +41,23 @@ namespace Repository.Repositories
 
         public void UpdateItem(int id, DietType item)
         {
-            var dietType = GetById(id);
-            dietType.DietName = item.DietName;
-            dietType.TimeMeals = item.TimeMeals;
-            dietType.MealsPerDay = item.MealsPerDay;
-            dietType.NumCalories = item.NumCalories;
-            dietType.Customers = item.Customers;
+            var existing = GetById(id);
+            if (existing == null) return;
 
-            _context.Save();
+            existing.DietName = item.DietName;
+            existing.MealsPerDay = item.MealsPerDay;
+            existing.NumCalories = item.NumCalories;
+            existing.SpecialComments = item.SpecialComments;
+            existing.ImageUrl = item.ImageUrl;
+           
+            // נעדכן רק את TimeMealsString – זה שמישמר במסד
+            existing.TimeMealsString = item.TimeMealsString;
 
-            dietType.TimeMealsString = item.TimeMealsString;
+            // ⚠️ לא נעדכן Customers – אלא אם באמת יש צורך, וגם אז בזהירות עם Tracking
+            // existing.Customers = item.Customers;
 
-            //לבדק אם זה באמת כל הפרופרטי
             _context.Save();
         }
+
     }
 }
