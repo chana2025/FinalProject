@@ -30,7 +30,7 @@ namespace Mock
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
 
-            optionsBuilder.UseSqlServer("Server=DESKTOP-1VUANBN;Database=DietSC1;Trusted_Connection=True;TrustServerCertificate=True;");
+            optionsBuilder.UseSqlServer("Server=DESKTOP-1VUANBN;Database=DietSC2;Trusted_Connection=True;TrustServerCertificate=True;");
         }
 
        

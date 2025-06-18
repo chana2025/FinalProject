@@ -12,6 +12,7 @@ using Repository.Reposetories;
 using Repository.Repositories;
 using Service.Services;
 
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -49,27 +50,30 @@ builder.Services.AddSwaggerGen(option =>
 // ✅ הרשמה לשירותים שלך
 builder.Services.AddScoped<IService<CustomerDto>, CustomerService>();
 builder.Services.AddScoped<IFileUploadService, FileUploadService>();
-builder.Services.AddScoped<IRepository<Customer>, CustomerRepository>(); // או השם המדויק שלך
-builder.Services.AddAutoMapper(typeof(MyMapper)); // או typeof(Startup) / typeof(AutoMapperProfile)
-builder.Services.AddScoped<IService<DietDto>, DietTypeService>();//לשים לב אם זה נכון
-builder.Services.AddScoped<IRepository<DietType>, DietTypeRepository>();//לשים לב אם זה נכון
-builder.Services.AddScoped<IService<WeeklyTrackingDto>, WeeklyTrackingService>();//לשים לב אם זה נכון
-builder.Services.AddScoped<IRepository<WeeklyTracking>, WeeklyTrackingRepository>();//לשים לב אם זה נכון
+builder.Services.AddScoped<IRepository<Customer>, CustomerRepository>();
+builder.Services.AddAutoMapper(typeof(MyMapper).Assembly); // ✅ שינוי: MyMapper הוא כנראה פרופיל בתוך Assembly, עדיף .Assembly
+// אם MyMapper הוא לא קובץ, אלא רק "שם הפרופיל" אז תצטרכי לשים את ה-Assembly בו הוא נמצא
+// לדוגמה: builder.Services.AddAutoMapper(typeof(Program).Assembly); או typeof(Startup).Assembly
+
+builder.Services.AddScoped<IService<DietDto>, DietTypeService>();
+builder.Services.AddScoped<IRepository<DietType>, DietTypeRepository>();
+builder.Services.AddScoped<IService<WeeklyTrackingDto>, WeeklyTrackingService>();
+builder.Services.AddScoped<IRepository<WeeklyTracking>, WeeklyTrackingRepository>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<IFoodPreferenceRepository, FoodPreferenceRepository>();
+
+// ✅ שינוי קריטי: הסר את השורה הזו והחלף אותה בשורה שמתחתיה
+// builder.Services.AddScoped<IService<ProductDto>, ProductService>(); // ❌ הסר שורה זו!
+
+// ✅ הוספה: רישום IProductService עבור ProductService
+builder.Services.AddScoped<IProductService, ProductService>(); // ✅ זהו הרישום הנכון עבור הקונטרולר
+
+builder.Services.AddScoped<IRepository<Product>, ProductRepository>();
+
+// ודא ש-IContext ו-Database מגיעים מ-namespace נכון
+// אם הם ב-namespace בשם 'DataRepository', ודא ש-using DataRepository; קיים למעלה
 builder.Services.AddScoped<IContext, Database>();
-
-builder.Services.AddScoped<IService<ProductDto>, ProductService>();//לשים לב אם זה נכון
-builder.Services.AddScoped < IRepository <Product>, ProductRepository>();//לשים לב אם זה נכון
-
-
-// לדוגמה, אם יש גם:
-// builder.Services.AddScoped<IService<CategoryDto>, CategoryService>();
-// builder.Services.AddScoped<IRepository<Category>, CategoryRepository>();
-// builder.Services.AddAutoMapper(typeof(MyMapper));
-// builder.Services.AddScoped<IContext, Database>(); // אם זה לא קיים כבר
-
-builder.Services.AddDbContext<IContext, Database>();
+builder.Services.AddDbContext<Database>(); // ✅ אם Database הוא DbContext, רשום אותו גם כ-DbContext
 
 // ✅ Authentication
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)

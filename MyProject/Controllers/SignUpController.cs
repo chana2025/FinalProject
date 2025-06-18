@@ -67,7 +67,8 @@ namespace MyProject.Controllers
                 Email = signUpDto.Email,
                 Height = signUpDto.Height,
                 Weight = signUpDto.Weight,
-                ImagePath = imageBytes
+                ImagePath = imageBytes,
+                Gender = signUpDto.Gender,
             };
 
             var addedCustomer = _service.AddItem(customer);

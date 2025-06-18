@@ -33,8 +33,8 @@ namespace Repository.Entities
         [Required]
         public string Email { get; set; }
 
-        public double Height { get; set; }
-        public double Weight { get; set; }
+        public double? Height { get; set; }
+        public double? Weight { get; set; }
 
         [Required]
         public string Password { get; set; }

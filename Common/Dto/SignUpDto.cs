@@ -13,7 +13,7 @@ namespace Common.Dto
         public double? Height { get; set; }
         public double? Weight { get; set; }
         public eRole Role { get; set; }
-
+        public eGender Gender { get; set; }
         public List<int> LikedProductIds { get; set; } = new();
         public List<int> DislikedProductIds { get; set; } = new();
 

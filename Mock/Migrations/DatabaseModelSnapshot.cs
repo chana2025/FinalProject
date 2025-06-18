@@ -44,7 +44,7 @@ namespace Mock.Migrations
                     b.Property<int>("Gender")
                         .HasColumnType("int");
 
-                    b.Property<double>("Height")
+                    b.Property<double?>("Height")
                         .HasColumnType("float");
 
                     b.Property<byte[]>("ImagePath")
@@ -64,7 +64,7 @@ namespace Mock.Migrations
                     b.Property<int>("Role")
                         .HasColumnType("int");
 
-                    b.Property<double>("Weight")
+                    b.Property<double?>("Weight")
                         .HasColumnType("float");
 
                     b.HasKey("Id");

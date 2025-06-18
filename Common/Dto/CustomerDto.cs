@@ -9,6 +9,7 @@ namespace Common.Dto
         public string FullName { get; set; }
         public string Phone { get; set; }
         public eRole Role { get; set; }
+        public eGender Gender { get; set; }
         public string Password { get; set; }
         public string Email { get; set; }
         public double? Height { get; set; }
