@@ -74,6 +74,8 @@ builder.Services.AddScoped<IRepository<Product>, ProductRepository>();
 // אם הם ב-namespace בשם 'DataRepository', ודא ש-using DataRepository; קיים למעלה
 builder.Services.AddScoped<IContext, Database>();
 builder.Services.AddDbContext<Database>(); // ✅ אם Database הוא DbContext, רשום אותו גם כ-DbContext
+//builder.Services.AddScoped<IProductApiService, ProductApiService>();
+builder.Services.AddHttpClient<IProductApiService, ProductApiService>();
 
 // ✅ Authentication
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)

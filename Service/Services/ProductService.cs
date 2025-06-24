@@ -6,9 +6,9 @@ using Service.Interfaces; // ודא שזה מיובא
 using Repository.Entities;
 using Repository.Interfaces; // ודא שזה מיובא
 
+// ✅ שינוי: מממש את IProductService במקום IService<ProductDto>
 namespace Service.Services
 {
-    // ✅ שינוי: מממש את IProductService במקום IService<ProductDto>
     public class ProductService : IProductService
     {
         private readonly IRepository<Product> _repository;
@@ -40,21 +40,16 @@ namespace Service.Services
         public ProductDto GetById(int id)
         {
             var entity = _repository.GetById(id);
-            // ✅ הגנה: החזר null אם entity הוא null כדי למנוע NullReferenceException
             return entity == null ? null : MapToDto(entity);
         }
 
-        // ✅ הוספה: מימוש מתודת החיפוש לפי שם
         public List<ProductDto> GetByName(string name)
         {
-            // ודא שהשם אינו ריק או null
             if (string.IsNullOrWhiteSpace(name))
             {
-                // אם מחרוזת החיפוש ריקה, נחזיר רשימה ריקה
                 return new List<ProductDto>();
             }
 
-            // חיפוש מוצרים שהשם שלהם מכיל את מחרוזת החיפוש (לא תלוי רישיות)
             return _repository.GetAll()
                               .Where(p => p.Name != null && p.Name.Contains(name, StringComparison.OrdinalIgnoreCase))
                               .Select(MapToDto)
@@ -69,7 +64,6 @@ namespace Service.Services
 
         private ProductDto MapToDto(Product product)
         {
-            // ✅ הגנה: החזר null אם product הוא null
             if (product == null) return null;
             return new ProductDto
             {
@@ -85,18 +79,41 @@ namespace Service.Services
 
         private Product MapToEntity(ProductDto dto)
         {
-            // ✅ הגנה: החזר null אם dto הוא null
             if (dto == null) return null;
             return new Product
             {
                 ProductId = dto.ProductId,
-                Name = dto.Name ?? "", // ודא ש-Name אינו null
+                Name = dto.Name ?? "",
                 Calories = dto.Calories,
                 Protein = dto.Protein,
                 Fat = dto.Fat,
                 Carbohydrates = dto.Carbohydrates,
                 SourceApi = dto.SourceApi
             };
+        }
+
+        // כאן העדכון: הפוך את המתודה לאסינכרונית והשתמש ב-Task<int> במקום int
+        public async Task<int> SaveProductsFromApi(List<ProductDto> productsFromApi)
+        {
+            int count = 0;
+
+            // אם _repository.GetAll() הוא סינכרוני, אפשר להשאיר, אחרת תתאים לאסינכרוני
+            var existingProducts = _repository.GetAll().Select(p => p.Name).ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+            foreach (var dto in productsFromApi)
+            {
+                if (!existingProducts.Contains(dto.Name))
+                {
+                    var entity = MapToEntity(dto);
+                    _repository.AddItem(entity);
+                    count++;
+                }
+            }
+
+            // במידה ויש כאן פעולה אסינכרונית (כגון שמירת שינויים), הוסף await כאן
+            // await _repository.SaveChangesAsync();
+
+            return await Task.FromResult(count); // החזרה אסינכרונית פשוטה
         }
     }
 }

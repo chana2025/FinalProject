@@ -14,7 +14,15 @@ namespace Common.Dto
         public string Email { get; set; }
         public double? Height { get; set; }
         public double? Weight { get; set; }
-        public byte[]? ImagePath { get; set; } // שמירת תוכן התמונה
-        public IFormFile? FileImage { get; set; } // מגיע מהלקוח (מה־Form)
+
+        // התמונה עצמה (לשימוש ב-API שרוצה להחזיר אותה כ-base64 או File)
+        public byte[]? ImagePath { get; set; }
+
+        // שם הקובץ או הנתיב (אם נשמרה פיזית בתיקייה, לדוג' /images/user1.jpg)
+        public string? ImageUrl { get; set; }
+
+        // קובץ שמגיע מהקליינט בהרשמה
+        public IFormFile? FileImage { get; set; }
     }
+
 }

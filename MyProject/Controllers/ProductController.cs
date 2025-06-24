@@ -1,9 +1,12 @@
 ﻿using Common.Dto;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Service.Interfaces; // ודא שזה מיובא
+using Service.Interfaces;
 using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Threading.Tasks;
+using ClosedXML.Excel;
 
 namespace MyProject.Controllers
 {
@@ -11,17 +14,16 @@ namespace MyProject.Controllers
     [ApiController]
     public class ProductController : ControllerBase
     {
-        // ✅ שינוי: הזרקת IProductService במקום IService<ProductDto>
-        private readonly IProductService _service; // שים לב לשינוי כאן
+        private readonly IProductService _service;
+        private readonly IProductApiService _apiService;
 
-        // ✅ שינוי: הקונסטרקטור צריך לקבל IProductService
-        public ProductController(IProductService service)
+        public ProductController(IProductService service, IProductApiService apiService)
         {
             _service = service;
+            _apiService = apiService;
         }
 
         [HttpGet]
-        // [Authorize(Roles = "ADMIN,WORKER")] // שחזר את ההערה אם זה עדיין מיועד
         public ActionResult<List<ProductDto>> Get()
         {
             try
@@ -35,7 +37,6 @@ namespace MyProject.Controllers
         }
 
         [HttpGet("{id}")]
-        //[Authorize] // שחזר את ההערה אם זה עדיין מיועד
         public ActionResult<ProductDto> Get(int id)
         {
             try
@@ -52,26 +53,18 @@ namespace MyProject.Controllers
             }
         }
 
-        // ✅ הוספה: נקודת קצה חדשה לחיפוש מוצרים לפי שם
-        [HttpGet("search")] // לדוגמה: /api/Product/search?name=apple
-        // [Authorize] // ייתכן ותרצי הרשאה גם לחיפוש, תלוי אם זה פתוח לכל המשתמשים
+        [HttpGet("search")]
         public ActionResult<List<ProductDto>> SearchProducts([FromQuery] string name)
         {
             try
             {
-                // ודא ששם החיפוש סופק
                 if (string.IsNullOrWhiteSpace(name))
-                {
-                    // אפשר להחזיר BadRequest או פשוט את כל המוצרים אם שם החיפוש ריק
-                    // במקרה זה, נחזיר Bad Request אם אין שם חיפוש
                     return BadRequest("שם המוצר לחיפוש אינו יכול להיות ריק.");
-                }
 
                 var products = _service.GetByName(name);
                 if (products == null || products.Count == 0)
-                {
                     return NotFound($"לא נמצאו מוצרים המכילים את השם '{name}'.");
-                }
+
                 return Ok(products);
             }
             catch (Exception ex)
@@ -87,7 +80,6 @@ namespace MyProject.Controllers
             try
             {
                 var created = _service.AddItem(product);
-                // ודא ש-ProductId קיים ב-created. אם לא, יכול להיות בעיה במיפוי או בשמירה
                 return CreatedAtAction(nameof(Get), new { id = created.ProductId }, created);
             }
             catch (Exception ex)
@@ -100,7 +92,7 @@ namespace MyProject.Controllers
         [Authorize(Roles = "ADMIN")]
         public IActionResult Put(int id, [FromForm] ProductDto product)
         {
-            if (id != product.ProductId) // ודא שזה ProductId ולא CustomerId
+            if (id != product.ProductId)
                 return BadRequest("ID mismatch");
 
             try
@@ -126,6 +118,50 @@ namespace MyProject.Controllers
             catch (Exception ex)
             {
                 return StatusCode(500, ex.Message);
+            }
+        }
+
+        [HttpPost("import-from-api")]
+        [Authorize(Roles = "ADMIN")]
+        public async Task<IActionResult> ImportFromApi()
+        {
+            try
+            {
+                var productsFromApi = await _apiService.GetAllProductsAsync();
+                int added = await _service.SaveProductsFromApi(productsFromApi);
+                return Ok($"{added} products were imported successfully.");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error importing products: {ex.Message}");
+            }
+        }
+
+        // ✅ נקודת קצה להורדת המוצרים כקובץ Excel
+        [HttpGet("download-excel")]
+        public IActionResult DownloadExcel()
+        {
+            try
+            {
+                var products = _service.GetAll();
+
+                using var workbook = new XLWorkbook();
+                var worksheet = workbook.Worksheets.Add("Products");
+                worksheet.Cell(1, 1).InsertTable(products);
+
+                using var stream = new MemoryStream();
+                workbook.SaveAs(stream);
+                stream.Position = 0;
+
+                string fileName = $"products_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx";
+
+                return File(stream.ToArray(),
+                            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                            fileName);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "שגיאה ביצירת הקובץ: " + ex.Message);
             }
         }
     }

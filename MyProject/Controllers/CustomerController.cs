@@ -129,6 +129,28 @@ namespace MyProject.Controllers
             }
         }
 
+        [HttpGet("image/{id}")]
+        public IActionResult GetCustomerImage(int id)
+        {
+            var customer = _service.GetById(id);
+            if (customer == null || customer.ImagePath == null)
+                return NotFound();
+
+            string mimeType = "image/jpeg"; // ברירת מחדל
+            if (!string.IsNullOrEmpty(customer.ImageUrl))
+            {
+                if (customer.ImageUrl.EndsWith(".png", StringComparison.OrdinalIgnoreCase))
+                    mimeType = "image/png";
+                else if (customer.ImageUrl.EndsWith(".jpg", StringComparison.OrdinalIgnoreCase) ||
+                         customer.ImageUrl.EndsWith(".jpeg", StringComparison.OrdinalIgnoreCase))
+                    mimeType = "image/jpeg";
+            }
+
+            return File(customer.ImagePath, mimeType);
+        }
+
+
+
         // פונקציה להעלאת קובץ תמונה
         //private async Task<string> UploadImage(IFormFile file)
         //{

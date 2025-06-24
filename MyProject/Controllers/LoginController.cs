@@ -25,7 +25,7 @@ namespace MyProject.Controllers
         }
 
         // POST api/login (רישום משתמש חדש)
-        
+
 
         // POST api/login/login (כניסה למערכת)
         [HttpPost("login")]
@@ -67,10 +67,15 @@ namespace MyProject.Controllers
         // פונקציית אימות
         private CustomerDto Authenticate(UserLogin userLogin)
         {
+            var email = userLogin.Email.Trim().ToLower();
+            var password = userLogin.Password.Trim();
+
             return _service.GetAll()
-                .FirstOrDefault(u => u.Email == userLogin.Email &&
-                                     u.Password == userLogin.Password);
+                .FirstOrDefault(u => u.Email.Trim().ToLower() == email &&
+                                     u.Password.Trim() == password);
         }
+
+
 
         // פונקציה ליצירת טוקן JWT
         private string GenerateToken(CustomerDto customer)
@@ -79,12 +84,13 @@ namespace MyProject.Controllers
             var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
 
             var claims = new List<Claim>
-            {
-                new Claim(ClaimTypes.Name, customer.FullName),
-                new Claim(ClaimTypes.Email, customer.Email),
-                new Claim(ClaimTypes.Role, customer.Role.ToString())
-            };
-             
+    {
+        new Claim(ClaimTypes.Name, customer.FullName),
+        new Claim(ClaimTypes.Email, customer.Email),
+        new Claim(ClaimTypes.Role, customer.Role.ToString()),
+        new Claim("CustomerId", customer.Id.ToString()) // ✅ זה מה שמאפשר לנו להציג את התמונה ב־Frontend
+    };
+
             var token = new JwtSecurityToken(
                 issuer: _config["Jwt:Issuer"],
                 audience: _config["Jwt:Audience"],
@@ -95,5 +101,7 @@ namespace MyProject.Controllers
 
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
+
     }
 }
+

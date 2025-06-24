@@ -68,6 +68,7 @@ namespace MyProject.Controllers
                 Height = signUpDto.Height,
                 Weight = signUpDto.Weight,
                 ImagePath = imageBytes,
+                ImageUrl = $"{signUpDto.FullName}.jpg",
                 Gender = signUpDto.Gender,
             };
 

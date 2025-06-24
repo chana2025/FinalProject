@@ -8,7 +8,6 @@ namespace Common.Dto
 {
         public class ProductDto
         {
-        //חני עשתה את זה עצמאי
             public int  ProductId { get; set; }
             public string ?Name { get; set; }
             public double? Calories { get; set; }
