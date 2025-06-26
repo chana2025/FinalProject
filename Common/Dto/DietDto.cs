@@ -6,10 +6,11 @@ namespace Common.Dto
     {
         public int DietId { get; set; }
         public string DietName { get; set; }
-        public int MealsPerDay { get; set; }
-        public int NumCalories { get; set; }
-        public string SpecialComments { get; set; }
-        public string TimeMealsString { get; set; }
+        public double? Calories { get; set; }
+        public double ? Protein { get; set; }
+        public double ? Fat { get; set; }
+        public double ? Carbohydrates { get; set; }
+        public string ? SpecialComments { get; set; }
 
         public IFormFile? fileImage { get; set; } // התמונה שמועלת ע"י המשתמש
        // public string? ImagePath { get; set; }    // הנתיב לתמונה כפי שנשמר

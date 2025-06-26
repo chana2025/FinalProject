@@ -70,10 +70,12 @@ namespace Service
             if (existing == null) return;
 
             existing.DietName = item.DietName;
-            existing.MealsPerDay = item.MealsPerDay;
-            existing.NumCalories = item.NumCalories;
+            existing.Calories = item.Calories;
+            existing.Carbohydrates = item.Carbohydrates;
+            existing.Fat = item.Fat;
+            existing.Protein = item.Protein;
             existing.SpecialComments = item.SpecialComments;
-            existing.TimeMealsString = item.TimeMealsString;
+            existing.ImageUrl = item.ImageUrl;
 
             if (item.fileImage != null && item.fileImage.Length > 0)
             {

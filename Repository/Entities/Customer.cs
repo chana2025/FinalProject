@@ -42,7 +42,7 @@ namespace Repository.Entities
         public int? DietId { get; set; }
 
         [ForeignKey("DietId")]
-        public virtual DietType? DietType { get; set; }
+        public  DietType? DietType { get; set; }
 
         public virtual ICollection<WeeklyTracking> WeeklyTrackings { get; set; }
 
@@ -50,6 +50,7 @@ namespace Repository.Entities
         public string? ImageUrl { get; set; }
         //GPT said to change to llist...
         //public virtual CustomerFoodPreference FoodPreferences { get; set; }
+
         public virtual ICollection<CustomerFoodPreference> FoodPreferences { get; set; }
         public byte[]? ImagePath { get; set; }
 

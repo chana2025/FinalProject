@@ -45,13 +45,15 @@ namespace Repository.Repositories
             if (existing == null) return;
 
             existing.DietName = item.DietName;
-            existing.MealsPerDay = item.MealsPerDay;
-            existing.NumCalories = item.NumCalories;
+            existing.Calories = item.Calories;
+            existing.Carbohydrates = item.Carbohydrates;
+            existing.Fat = item.Fat;
+            existing.Protein = item.Protein;
             existing.SpecialComments = item.SpecialComments;
             existing.ImageUrl = item.ImageUrl;
-           
+
             // נעדכן רק את TimeMealsString – זה שמישמר במסד
-            existing.TimeMealsString = item.TimeMealsString;
+          
 
             // ⚠️ לא נעדכן Customers – אלא אם באמת יש צורך, וגם אז בזהירות עם Tracking
             // existing.Customers = item.Customers;
