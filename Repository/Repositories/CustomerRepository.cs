@@ -46,7 +46,7 @@ namespace Repository.Repositories
             var existing = _context.Customers.FirstOrDefault(c => c.Id == id);
             if (existing != null)
             {
-                // עדכון שדות בלבד - בלי Attach או Update
+                // עדכון שדות בסיסיים
                 existing.FullName = item.FullName;
                 existing.Email = item.Email;
                 existing.Password = item.Password;
@@ -55,11 +55,23 @@ namespace Repository.Repositories
                 existing.Height = item.Height;
                 existing.Weight = item.Weight;
                 existing.ImagePath = item.ImagePath;
+                existing.ImageUrl = item.ImageUrl;
+                existing.Gender = item.Gender;
+                existing.DietId = item.DietId;
 
-                _context.Save(); // שמירה רק פעם אחת
+                // עדכון FoodPreferences:
+                existing.FoodPreferences.Clear();
+
+                if (item.FoodPreferences != null)
+                {
+                    foreach (var pref in item.FoodPreferences)
+                    {
+                        existing.FoodPreferences.Add(pref);
+                    }
+                }
+
+                _context.Save(); // שמירה במסד
             }
         }
-
-
     }
 }

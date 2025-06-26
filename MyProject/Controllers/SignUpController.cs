@@ -70,6 +70,9 @@ namespace MyProject.Controllers
                 ImagePath = imageBytes,
                 ImageUrl = $"{signUpDto.FullName}.jpg",
                 Gender = signUpDto.Gender,
+                LikedProductIds=signUpDto.LikedProductIds,
+                DislikedProductIds= signUpDto.DislikedProductIds
+
             };
 
             var addedCustomer = _service.AddItem(customer);

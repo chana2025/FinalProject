@@ -4,8 +4,7 @@ using Repository.Entities;
 using Repository.Interfaces;
 using Service.Interfaces;
 using System.Collections.Generic;
-using System.IO;
-using System.Threading.Tasks;
+using System.Linq;
 
 namespace Service
 {
@@ -35,20 +34,75 @@ namespace Service
         public CustomerDto AddItem(CustomerDto item)
         {
             var customer = _mapper.Map<Customer>(item);
+
+            // ניהול העדפות אוכל - מחיקת העדפות ישנות והוספת חדשות
+            customer.FoodPreferences = new List<CustomerFoodPreference>();
+
+            if (item.LikedProductIds != null)
+            {
+                foreach (var likedId in item.LikedProductIds)
+                {
+                    customer.FoodPreferences.Add(new CustomerFoodPreference
+                    {
+                        ProductId = likedId,
+                        IsLiked = true
+                    });
+                }
+            }
+
+            if (item.DislikedProductIds != null)
+            {
+                foreach (var dislikedId in item.DislikedProductIds)
+                {
+                    customer.FoodPreferences.Add(new CustomerFoodPreference
+                    {
+                        ProductId = dislikedId,
+                        IsLiked = false
+                    });
+                }
+            }
+
             var added = _repository.AddItem(customer);
             return _mapper.Map<CustomerDto>(added);
+        }
+
+        public void UpdateItem(int id, CustomerDto item)
+        {
+            var customer = _mapper.Map<Customer>(item);
+
+            // ניהול עדכוני העדפות אוכל
+            customer.FoodPreferences = new List<CustomerFoodPreference>();
+
+            if (item.LikedProductIds != null)
+            {
+                foreach (var likedId in item.LikedProductIds)
+                {
+                    customer.FoodPreferences.Add(new CustomerFoodPreference
+                    {
+                        ProductId = likedId,
+                        IsLiked = true
+                    });
+                }
+            }
+
+            if (item.DislikedProductIds != null)
+            {
+                foreach (var dislikedId in item.DislikedProductIds)
+                {
+                    customer.FoodPreferences.Add(new CustomerFoodPreference
+                    {
+                        ProductId = dislikedId,
+                        IsLiked = false
+                    });
+                }
+            }
+
+            _repository.UpdateItem(id, customer);
         }
 
         public void DeleteItem(int id)
         {
             _repository.DeleteItem(id);
         }
-
-        public void UpdateItem(int id, CustomerDto item)
-        {
-            var customer = _mapper.Map<Customer>(item);
-            _repository.UpdateItem(id, customer);
-        }
     }
-
 }

@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Mock;
 
@@ -11,9 +12,11 @@ using Mock;
 namespace Mock.Migrations
 {
     [DbContext(typeof(Database))]
-    partial class DatabaseModelSnapshot : ModelSnapshot
+    [Migration("20250626204102_init999")]
+    partial class init999
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -91,18 +94,12 @@ namespace Mock.Migrations
                     b.Property<int>("ProductId")
                         .HasColumnType("int");
 
-                    b.Property<int?>("ProductId1")
-                        .HasColumnType("int");
-
                     b.HasKey("Id");
 
                     b.HasIndex("CustomerId");
 
-                    b.HasIndex("ProductId");
-
-                    b.HasIndex("ProductId1")
-                        .IsUnique()
-                        .HasFilter("[ProductId1] IS NOT NULL");
+                    b.HasIndex("ProductId")
+                        .IsUnique();
 
                     b.ToTable("CustomerFoodPreferences");
                 });
@@ -244,14 +241,10 @@ namespace Mock.Migrations
                         .IsRequired();
 
                     b.HasOne("Repository.Entities.Product", "Product")
-                        .WithMany()
-                        .HasForeignKey("ProductId")
+                        .WithOne("CustomerFoodPreferences")
+                        .HasForeignKey("Repository.Entities.CustomerFoodPreference", "ProductId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.HasOne("Repository.Entities.Product", null)
-                        .WithOne("CustomerFoodPreferences")
-                        .HasForeignKey("Repository.Entities.CustomerFoodPreference", "ProductId1");
 
                     b.Navigation("Customer");
 

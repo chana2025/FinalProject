@@ -21,6 +21,21 @@ namespace Mock
         public DbSet<Product> Products { get; set; }
         public DbSet<CustomerFoodPreference> CustomerFoodPreferences { get; set; }
 
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            // קשר בין Customer ל־CustomerFoodPreference
+            modelBuilder.Entity<CustomerFoodPreference>()
+                .HasOne(p => p.Customer)
+                .WithMany(c => c.FoodPreferences)
+                .HasForeignKey(p => p.CustomerId)
+                .OnDelete(DeleteBehavior.Cascade); // אופציונלי - למחוק העדפות כשנמחק לקוח
+
+            // קשר בין Product ל־CustomerFoodPreference
+            modelBuilder.Entity<CustomerFoodPreference>()
+                .HasOne(p => p.Product)
+                .WithMany()
+                .HasForeignKey(p => p.ProductId);
+        }
 
         public void Save()
         {

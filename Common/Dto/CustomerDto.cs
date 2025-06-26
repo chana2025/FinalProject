@@ -21,6 +21,8 @@ namespace Common.Dto
         // שם הקובץ או הנתיב (אם נשמרה פיזית בתיקייה, לדוג' /images/user1.jpg)
         public string? ImageUrl { get; set; }
 
+        public List<int> LikedProductIds { get; set; } = new();
+        public List<int> DislikedProductIds { get; set; } = new();
         // קובץ שמגיע מהקליינט בהרשמה
         public IFormFile? FileImage { get; set; }
     }
