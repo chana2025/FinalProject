@@ -1,53 +1,56 @@
 ﻿using Repository.Entities;
 using Repository.Interfaces;
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore; // נדרש ל-EF Core Async extensions
 
-namespace Repository.Reposetories
+namespace Repository.Repositories
 {
- 
     public class ProductForDietTypeRepository : IRepository<ProductForDietType>
     {
         private readonly IContext _context;
-        public ProductForDietTypeRepository(IContext _context)
+
+        public ProductForDietTypeRepository(IContext context)
         {
-            this._context = _context;
+            _context = context;
         }
-        public ProductForDietType AddItem(ProductForDietType item)
+
+        public async Task<ProductForDietType> AddItemAsync(ProductForDietType item)
         {
-            this._context.ProductForDietTypes.Add(item);
-            this._context.Save();
+            await _context.ProductForDietTypes.AddAsync(item);
+            await _context.SaveAsync();
             return item;
         }
 
-        public void DeleteItem(int id)
+        public async Task DeleteItemAsync(int id)
         {
-            this._context.ProductForDietTypes.Remove(GetById(id));
-            this._context.Save();
+            var entity = await GetByIdAsync(id);
+            if (entity == null) return; // אפשר לזרוק חריגה במקום אם רוצים
+
+            _context.ProductForDietTypes.Remove(entity);
+            await _context.SaveAsync();
         }
 
-
-        public List<ProductForDietType> GetAll()
+        public async Task<List<ProductForDietType>> GetAllAsync()
         {
-            return _context.ProductForDietTypes.ToList();
+            return await _context.ProductForDietTypes.ToListAsync();
         }
 
-        public ProductForDietType GetById(int id)
+        public async Task<ProductForDietType> GetByIdAsync(int id)
         {
-            return this._context.ProductForDietTypes.FirstOrDefault(x => x.Id.Equals(id));
+            return await _context.ProductForDietTypes.FirstOrDefaultAsync(x => x.Id == id);
         }
 
-
-        public void UpdateItem(int id, ProductForDietType item)
+        public async Task UpdateItemAsync(int id, ProductForDietType item)
         {
-            var productForDietType = GetById(id);
-            productForDietType.ProdName = item.ProdName;
-            _context.Save();
+            var existing = await GetByIdAsync(id);
+            if (existing == null) return;
+
+            // כאן אפשר לעדכן שדות רלוונטיים, לדוגמה:
+            // existing.ProdName = item.ProdName;
+
+            await _context.SaveAsync();
         }
-
-
     }
 }

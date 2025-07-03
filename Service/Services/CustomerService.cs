@@ -5,48 +5,55 @@ using Repository.Interfaces;
 using Service.Interfaces;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Service
 {
     public class CustomerService : IService<CustomerDto>
     {
         private readonly IRepository<Customer> _repository;
+        private readonly IRepository<Product> _productRepository; // הוספתי
         private readonly IMapper _mapper;
 
-        public CustomerService(IRepository<Customer> repository, IMapper mapper)
+        public CustomerService(IRepository<Customer> repository, IRepository<Product> productRepository, IMapper mapper)
         {
             _repository = repository;
+            _productRepository = productRepository; // הוספתי
             _mapper = mapper;
         }
 
-        public CustomerDto GetById(int id)
+        public async Task<CustomerDto> GetByIdAsync(int id)
         {
-            var customer = _repository.GetById(id);
+            var customer = await _repository.GetByIdAsync(id);
             return _mapper.Map<CustomerDto>(customer);
         }
 
-        public List<CustomerDto> GetAll()
+        public async Task<List<CustomerDto>> GetAllAsync()
         {
-            var customers = _repository.GetAll();
+            var customers = await _repository.GetAllAsync();
             return _mapper.Map<List<CustomerDto>>(customers);
         }
 
-        public CustomerDto AddItem(CustomerDto item)
+        public async Task<CustomerDto> AddItemAsync(CustomerDto item)
         {
             var customer = _mapper.Map<Customer>(item);
 
-            // ניהול העדפות אוכל - מחיקת העדפות ישנות והוספת חדשות
             customer.FoodPreferences = new List<CustomerFoodPreference>();
+
+            var validProductIds = (await _productRepository.GetAllAsync()).Select(p => p.ProductId).ToHashSet();
 
             if (item.LikedProductIds != null)
             {
                 foreach (var likedId in item.LikedProductIds)
                 {
-                    customer.FoodPreferences.Add(new CustomerFoodPreference
+                    if (validProductIds.Contains(likedId))
                     {
-                        ProductId = likedId,
-                        IsLiked = true
-                    });
+                        customer.FoodPreferences.Add(new CustomerFoodPreference
+                        {
+                            ProductId = likedId,
+                            IsLiked = true
+                        });
+                    }
                 }
             }
 
@@ -54,34 +61,41 @@ namespace Service
             {
                 foreach (var dislikedId in item.DislikedProductIds)
                 {
-                    customer.FoodPreferences.Add(new CustomerFoodPreference
+                    if (validProductIds.Contains(dislikedId))
                     {
-                        ProductId = dislikedId,
-                        IsLiked = false
-                    });
+                        customer.FoodPreferences.Add(new CustomerFoodPreference
+                        {
+                            ProductId = dislikedId,
+                            IsLiked = false
+                        });
+                    }
                 }
             }
 
-            var added = _repository.AddItem(customer);
+            var added = await _repository.AddItemAsync(customer);
             return _mapper.Map<CustomerDto>(added);
         }
 
-        public void UpdateItem(int id, CustomerDto item)
+        public async Task UpdateItemAsync(int id, CustomerDto item)
         {
             var customer = _mapper.Map<Customer>(item);
 
-            // ניהול עדכוני העדפות אוכל
             customer.FoodPreferences = new List<CustomerFoodPreference>();
+
+            var validProductIds = (await _productRepository.GetAllAsync()).Select(p => p.ProductId).ToHashSet();
 
             if (item.LikedProductIds != null)
             {
                 foreach (var likedId in item.LikedProductIds)
                 {
-                    customer.FoodPreferences.Add(new CustomerFoodPreference
+                    if (validProductIds.Contains(likedId))
                     {
-                        ProductId = likedId,
-                        IsLiked = true
-                    });
+                        customer.FoodPreferences.Add(new CustomerFoodPreference
+                        {
+                            ProductId = likedId,
+                            IsLiked = true
+                        });
+                    }
                 }
             }
 
@@ -89,20 +103,23 @@ namespace Service
             {
                 foreach (var dislikedId in item.DislikedProductIds)
                 {
-                    customer.FoodPreferences.Add(new CustomerFoodPreference
+                    if (validProductIds.Contains(dislikedId))
                     {
-                        ProductId = dislikedId,
-                        IsLiked = false
-                    });
+                        customer.FoodPreferences.Add(new CustomerFoodPreference
+                        {
+                            ProductId = dislikedId,
+                            IsLiked = false
+                        });
+                    }
                 }
             }
 
-            _repository.UpdateItem(id, customer);
+            await _repository.UpdateItemAsync(id, customer);
         }
 
-        public void DeleteItem(int id)
+        public async Task DeleteItemAsync(int id)
         {
-            _repository.DeleteItem(id);
+            await _repository.DeleteItemAsync(id);
         }
     }
 }

@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Common.Dto;
-using Service.Interfaces; // ודא שזה מיובא
+using Service.Interfaces;
 using Repository.Entities;
-using Repository.Interfaces; // ודא שזה מיובא
+using Repository.Interfaces;
 
-// ✅ שינוי: מממש את IProductService במקום IService<ProductDto>
 namespace Service.Services
 {
     public class ProductService : IProductService
@@ -18,48 +18,48 @@ namespace Service.Services
             _repository = repository;
         }
 
-        public ProductDto AddItem(ProductDto dto)
+        public async Task<ProductDto> AddItemAsync(ProductDto dto)
         {
             var entity = MapToEntity(dto);
-            var added = _repository.AddItem(entity);
+            var added = await _repository.AddItemAsync(entity);
             return MapToDto(added);
         }
 
-        public void DeleteItem(int id)
+        public async Task DeleteItemAsync(int id)
         {
-            _repository.DeleteItem(id);
+            await _repository.DeleteItemAsync(id);
         }
 
-        public List<ProductDto> GetAll()
+        public async Task<List<ProductDto>> GetAllAsync()
         {
-            return _repository.GetAll()
-                .Select(MapToDto)
-                .ToList();
+            var entities = await _repository.GetAllAsync();
+            return entities.Select(MapToDto).ToList();
         }
 
-        public ProductDto GetById(int id)
+        public async Task<ProductDto> GetByIdAsync(int id)
         {
-            var entity = _repository.GetById(id);
+            var entity = await _repository.GetByIdAsync(id);
             return entity == null ? null : MapToDto(entity);
         }
 
-        public List<ProductDto> GetByName(string name)
+        public async Task<List<ProductDto>> GetByNameAsync(string name)
         {
             if (string.IsNullOrWhiteSpace(name))
             {
                 return new List<ProductDto>();
             }
 
-            return _repository.GetAll()
-                              .Where(p => p.Name != null && p.Name.Contains(name, StringComparison.OrdinalIgnoreCase))
-                              .Select(MapToDto)
-                              .ToList();
+            var all = await _repository.GetAllAsync();
+            return all
+                .Where(p => p.Name != null && p.Name.Contains(name, StringComparison.OrdinalIgnoreCase))
+                .Select(MapToDto)
+                .ToList();
         }
 
-        public void UpdateItem(int id, ProductDto dto)
+        public async Task UpdateItemAsync(int id, ProductDto dto)
         {
             var entity = MapToEntity(dto);
-            _repository.UpdateItem(id, entity);
+            await _repository.UpdateItemAsync(id, entity);
         }
 
         private ProductDto MapToDto(Product product)
@@ -92,28 +92,27 @@ namespace Service.Services
             };
         }
 
-        // כאן העדכון: הפוך את המתודה לאסינכרונית והשתמש ב-Task<int> במקום int
-        public async Task<int> SaveProductsFromApi(List<ProductDto> productsFromApi)
+        public async Task<int> SaveProductsFromApiAsync(List<ProductDto> productsFromApi)
         {
             int count = 0;
-
-            // אם _repository.GetAll() הוא סינכרוני, אפשר להשאיר, אחרת תתאים לאסינכרוני
-            var existingProducts = _repository.GetAll().Select(p => p.Name).ToHashSet(StringComparer.OrdinalIgnoreCase);
+            var existingProducts = (await _repository.GetAllAsync())
+                .Select(p => p.Name)
+                .ToHashSet(StringComparer.OrdinalIgnoreCase);
 
             foreach (var dto in productsFromApi)
             {
                 if (!existingProducts.Contains(dto.Name))
                 {
                     var entity = MapToEntity(dto);
-                    _repository.AddItem(entity);
+                    await _repository.AddItemAsync(entity);
                     count++;
                 }
             }
 
-            // במידה ויש כאן פעולה אסינכרונית (כגון שמירת שינויים), הוסף await כאן
+            // במידה ויש SaveChangesAsync, הוסף כאן:
             // await _repository.SaveChangesAsync();
 
-            return await Task.FromResult(count); // החזרה אסינכרונית פשוטה
+            return count;
         }
     }
 }

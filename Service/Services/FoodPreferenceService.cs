@@ -2,6 +2,7 @@
 using Service.Interfaces;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Repository.Interfaces;
 using Repository.Entities;
 
@@ -16,12 +17,10 @@ namespace Service.Services
             _unitOfWork = unitOfWork;
         }
 
-        public void SaveUserPreferences(FoodPreferencesDto dto, int userId)
+        public async Task SaveUserPreferencesAsync(FoodPreferencesDto dto, int userId)
         {
-            // מוחקים את ההעדפות הקודמות
-            _unitOfWork.FoodPreferenceRepository.DeleteByCustomerId(userId);
+            await _unitOfWork.FoodPreferenceRepository.DeleteByCustomerIdAsync(userId);
 
-            // שומרים את המוצרים האהובים
             if (dto.LikedProductIds != null)
             {
                 foreach (var productId in dto.LikedProductIds)
@@ -32,11 +31,10 @@ namespace Service.Services
                         ProductId = productId,
                         IsLiked = true
                     };
-                    _unitOfWork.FoodPreferenceRepository.AddItem(pref);
+                    await _unitOfWork.FoodPreferenceRepository.AddItemAsync(pref);
                 }
             }
 
-            // שומרים את המוצרים השנואים
             if (dto.DislikedProductIds != null)
             {
                 foreach (var productId in dto.DislikedProductIds)
@@ -47,16 +45,16 @@ namespace Service.Services
                         ProductId = productId,
                         IsLiked = false
                     };
-                    _unitOfWork.FoodPreferenceRepository.AddItem(pref);
+                    await _unitOfWork.FoodPreferenceRepository.AddItemAsync(pref);
                 }
             }
 
-            _unitOfWork.Save();
+            await _unitOfWork.SaveAsync();
         }
 
-        public FoodPreferencesDto GetUserPreferences(int userId)
+        public async Task<FoodPreferencesDto> GetUserPreferencesAsync(int userId)
         {
-            var preferences = _unitOfWork.FoodPreferenceRepository.GetByCustomerId(userId);
+            var preferences = await _unitOfWork.FoodPreferenceRepository.GetByCustomerIdAsync(userId);
 
             if (preferences == null || !preferences.Any())
             {
@@ -79,10 +77,10 @@ namespace Service.Services
             };
         }
 
-        public void ClearPreferences(int userId)
+        public async Task ClearPreferencesAsync(int userId)
         {
-            _unitOfWork.FoodPreferenceRepository.DeleteByCustomerId(userId);
-            _unitOfWork.Save();
+            await _unitOfWork.FoodPreferenceRepository.DeleteByCustomerIdAsync(userId);
+            await _unitOfWork.SaveAsync();
         }
     }
 }

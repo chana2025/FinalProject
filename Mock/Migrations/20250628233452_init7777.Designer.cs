@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Mock;
 
@@ -11,9 +12,11 @@ using Mock;
 namespace Mock.Migrations
 {
     [DbContext(typeof(Database))]
-    partial class DatabaseModelSnapshot : ModelSnapshot
+    [Migration("20250628233452_init7777")]
+    partial class init7777
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -206,9 +209,6 @@ namespace Mock.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int?>("ConsumedCalories")
-                        .HasColumnType("int");
-
                     b.Property<int>("CustId")
                         .HasColumnType("int");
 
@@ -263,7 +263,7 @@ namespace Mock.Migrations
             modelBuilder.Entity("Repository.Entities.ProductForDietType", b =>
                 {
                     b.HasOne("Repository.Entities.DietType", "DietType")
-                        .WithMany()
+                        .WithMany("ProductForDietTypes")
                         .HasForeignKey("DietTypeId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -300,6 +300,8 @@ namespace Mock.Migrations
             modelBuilder.Entity("Repository.Entities.DietType", b =>
                 {
                     b.Navigation("Customers");
+
+                    b.Navigation("ProductForDietTypes");
                 });
 
             modelBuilder.Entity("Repository.Entities.Product", b =>

@@ -3,8 +3,9 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Service.Interfaces;
 using Service.Services;
-
-// For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace MyProject.Controllers
 {
@@ -14,22 +15,22 @@ namespace MyProject.Controllers
     {
         private readonly IService<DietDto> _service;
         private readonly IFileUploadService _fileUploadService;
+        private readonly GreedyAlg _greedyAlg;
 
-        public DietTypeController(IFileUploadService fileUploadService, IService<DietDto> _service)
+        public DietTypeController(IFileUploadService fileUploadService, IService<DietDto> service, GreedyAlg greedyAlg)
         {
             _fileUploadService = fileUploadService;
-            this._service = _service;
+            _service = service;
+            _greedyAlg = greedyAlg;
         }
 
-
-        // GET: api/<DietTypeController>
-
+        // GET: api/DietType
         [HttpGet]
-        public ActionResult<List<DietDto>> Get()
+        public async Task<ActionResult<List<DietDto>>> Get()
         {
             try
             {
-                var diets = _service.GetAll();
+                var diets = await _service.GetAllAsync();
                 return Ok(diets);
             }
             catch (Exception ex)
@@ -37,15 +38,16 @@ namespace MyProject.Controllers
                 return StatusCode(500, $"Internal server error: {ex.Message}");
             }
         }
-        //V
+
+        // GET: api/DietType/5
         [HttpGet("{id}")]
-        public ActionResult<DietDto> Get(int id)
+        public async Task<ActionResult<DietDto>> Get(int id)
         {
             try
             {
-                var diet = _service.GetById(id);
+                var diet = await _service.GetByIdAsync(id);
                 if (diet == null)
-                    return NotFound($"diet with id {id} not found.");
+                    return NotFound($"Diet with id {id} not found.");
 
                 return Ok(diet);
             }
@@ -55,47 +57,40 @@ namespace MyProject.Controllers
             }
         }
 
-
-
-
-
-
-
-
-
+        // POST: api/DietType
         [HttpPost]
         public async Task<IActionResult> Post([FromForm] DietDto diet)
         {
             if (diet == null)
                 return BadRequest("Invalid Diet data.");
 
-            if (diet.fileImage != null && diet.fileImage.Length > 0)
+            try
             {
-                // מעלים את התמונה לתיקיית "dietTypes" ומקבלים את הנתיב
-                var imagePath = await _fileUploadService.UploadImageAsync(diet.fileImage, "dietTypes");
+                if (diet.fileImage != null && diet.fileImage.Length > 0)
+                {
+                    var imagePath = await _fileUploadService.UploadImageAsync(diet.fileImage, "dietTypes");
+                    diet.ImageUrl = imagePath;
+                }
 
-                // שומרים את הנתיב בשדה המתאים
-                diet.ImageUrl = imagePath;
+                await _service.AddItemAsync(diet);
+                return Ok("Diet added successfully.");
             }
-
-            _service.AddItem(diet);
-            return Ok("Diet added successfully.");
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
         }
 
-
-
-
-        // PUT api/<DietTypeController>/5
+        // PUT: api/DietType/5
         [HttpPut("{id}")]
-
-        public IActionResult Put(int id, [FromForm] DietDto dietDto)
+        public async Task<IActionResult> Put(int id, [FromForm] DietDto dietDto)
         {
             if (id != dietDto.DietId)
                 return BadRequest("ID mismatch.");
 
             try
             {
-                _service.UpdateItem(id, dietDto);
+                await _service.UpdateItemAsync(id, dietDto);
                 return NoContent();
             }
             catch (Exception ex)
@@ -104,15 +99,13 @@ namespace MyProject.Controllers
             }
         }
 
-
-        // DELETE api/<DietTypeController>/5
+        // DELETE: api/DietType/5
         [HttpDelete("{id}")]
-
-        public IActionResult Delete(int id)
+        public async Task<IActionResult> Delete(int id)
         {
             try
             {
-                _service.DeleteItem(id);
+                await _service.DeleteItemAsync(id);
                 return NoContent();
             }
             catch (Exception ex)
@@ -121,5 +114,22 @@ namespace MyProject.Controllers
             }
         }
 
+        // פונקציה חדשה - התאמה חמדנית של דיאטה ללקוח
+        [HttpGet("match-diet/{customerId}")]
+        public IActionResult MatchDietToCustomer(int customerId)
+        {
+            try
+            {
+                var matchedDiet = _greedyAlg.MatchBestDietsForCustomer(customerId);
+                if (matchedDiet == null)
+                    return NotFound("No suitable diet found for this customer.");
+
+                return Ok(matchedDiet);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+        }
     }
 }

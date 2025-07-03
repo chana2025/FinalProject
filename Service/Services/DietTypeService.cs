@@ -3,11 +3,8 @@ using Common.Dto;
 using Repository.Entities;
 using Repository.Interfaces;
 using Service.Interfaces;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Resources;
-using System.Text;
+using System.IO;
 using System.Threading.Tasks;
 
 namespace Service
@@ -23,7 +20,7 @@ namespace Service
             _mapper = mapper;
         }
 
-        public DietDto AddItem(DietDto item)
+        public async Task<DietDto> AddItemAsync(DietDto item)
         {
             string savedImagePath = null;
 
@@ -31,42 +28,42 @@ namespace Service
             {
                 var fileName = Path.GetFileName(item.fileImage.FileName);
                 var directory = Path.Combine(Directory.GetCurrentDirectory(), "MyProject", "Images");
-                Directory.CreateDirectory(directory); // אם התיקייה לא קיימת, תיווצר
+                Directory.CreateDirectory(directory);
                 savedImagePath = Path.Combine(directory, fileName);
 
                 using (var stream = new FileStream(savedImagePath, FileMode.Create))
                 {
-                    item.fileImage.CopyTo(stream);
+                    await item.fileImage.CopyToAsync(stream);
                 }
 
                 item.ImageUrl = Path.Combine("MyProject", "Images", fileName);
-
             }
 
             var dietEntity = _mapper.Map<DietDto, DietType>(item);
-            var addedEntity = _repository.AddItem(dietEntity);
+            var addedEntity = await _repository.AddItemAsync(dietEntity);
             return _mapper.Map<DietType, DietDto>(addedEntity);
         }
 
-
-        public void DeleteItem(int id)
+        public async Task DeleteItemAsync(int id)
         {
-            _repository.DeleteItem(id);
+            await _repository.DeleteItemAsync(id);
         }
 
-        public List<DietDto> GetAll()
+        public async Task<List<DietDto>> GetAllAsync()
         {
-            return _mapper.Map<List<DietType>, List<DietDto>>(_repository.GetAll());
+            var entities = await _repository.GetAllAsync();
+            return _mapper.Map<List<DietType>, List<DietDto>>(entities);
         }
 
-        public DietDto GetById(int id)
+        public async Task<DietDto> GetByIdAsync(int id)
         {
-            return _mapper.Map<DietType, DietDto>(_repository.GetById(id));
+            var entity = await _repository.GetByIdAsync(id);
+            return _mapper.Map<DietType, DietDto>(entity);
         }
 
-        public void UpdateItem(int id, DietDto item)
+        public async Task UpdateItemAsync(int id, DietDto item)
         {
-            var existing = _repository.GetById(id);
+            var existing = await _repository.GetByIdAsync(id);
             if (existing == null) return;
 
             existing.DietName = item.DietName;
@@ -86,14 +83,13 @@ namespace Service
                 var savedImagePath = Path.Combine(directory, fileName);
                 using (var stream = new FileStream(savedImagePath, FileMode.Create))
                 {
-                    item.fileImage.CopyTo(stream);
+                    await item.fileImage.CopyToAsync(stream);
                 }
 
-                // ⬅️ פה מתעדכן הנתיב החדש
                 existing.ImageUrl = Path.Combine("MyProject", "Images", fileName);
             }
 
-            _repository.UpdateItem(id, existing);
+            await _repository.UpdateItemAsync(id, existing);
         }
     }
-    }
+}

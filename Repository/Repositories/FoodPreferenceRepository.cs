@@ -1,10 +1,9 @@
 ﻿using Repository.Entities;
 using Repository.Interfaces;
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore; // בשביל ToListAsync
 
 namespace Repository.Repositories
 {
@@ -17,37 +16,27 @@ namespace Repository.Repositories
             _context = context;
         }
 
-        public void AddItem(CustomerFoodPreference pref)
+        public async Task AddItemAsync(CustomerFoodPreference pref)
         {
-            _context.CustomerFoodPreferences.Add(pref);
+            await _context.CustomerFoodPreferences.AddAsync(pref);
+            await _context.SaveAsync();
         }
 
-        public void DeleteByCustomerId(int customerId)
+        public async Task DeleteByCustomerIdAsync(int customerId)
         {
-            var prefs = _context.CustomerFoodPreferences
+            var prefs = await _context.CustomerFoodPreferences
                 .Where(p => p.CustomerId == customerId)
-                .ToList();
+                .ToListAsync();
 
             _context.CustomerFoodPreferences.RemoveRange(prefs);
+            await _context.SaveAsync();
         }
 
-
-
-        //public List<CustomerFoodPreference> GetByCustomerId(int customerId)
-        //{
-        //    return _context.CustomerFoodPreferences
-        //        .Where(p => p.CustomerId == customerId)
-        //        .ToList();
-        //}
-
-        public List<CustomerFoodPreference> GetByCustomerId(int customerId)
+        public async Task<List<CustomerFoodPreference>> GetByCustomerIdAsync(int customerId)
         {
-            return _context.CustomerFoodPreferences
+            return await _context.CustomerFoodPreferences
                 .Where(p => p.CustomerId == customerId)
-                .ToList();
+                .ToListAsync();
         }
-
-
-
     }
 }

@@ -1,7 +1,8 @@
 ﻿using Repository.Entities;
 using Repository.Interfaces;
 using System.Collections.Generic;
-using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 
 namespace Repository.Repositories
 {
@@ -14,36 +15,36 @@ namespace Repository.Repositories
             _context = context;
         }
 
-        public Customer AddItem(Customer item)
+        public async Task<Customer> AddItemAsync(Customer item)
         {
-            _context.Customers.Add(item);
-            _context.Save(); // חשוב!
+            await _context.Customers.AddAsync(item);
+            await _context.SaveAsync(); // חשוב!
             return item;
         }
 
-        public void DeleteItem(int id)
+        public async Task DeleteItemAsync(int id)
         {
-            var customer = _context.Customers.FirstOrDefault(c => c.Id == id);
+            var customer = await _context.Customers.FirstOrDefaultAsync(c => c.Id == id);
             if (customer != null)
             {
                 _context.Customers.Remove(customer);
-                _context.Save(); // חשוב!
+                await _context.SaveAsync(); // חשוב!
             }
         }
 
-        public List<Customer> GetAll()
+        public async Task<List<Customer>> GetAllAsync()
         {
-            return _context.Customers.ToList();
+            return await _context.Customers.ToListAsync();
         }
 
-        public Customer GetById(int id)
+        public async Task<Customer?> GetByIdAsync(int id)
         {
-            return _context.Customers.FirstOrDefault(c => c.Id == id)!;
+            return await _context.Customers.FirstOrDefaultAsync(c => c.Id == id);
         }
 
-        public void UpdateItem(int id, Customer item)
+        public async Task UpdateItemAsync(int id, Customer item)
         {
-            var existing = _context.Customers.FirstOrDefault(c => c.Id == id);
+            var existing = await _context.Customers.FirstOrDefaultAsync(c => c.Id == id);
             if (existing != null)
             {
                 // עדכון שדות בסיסיים
@@ -70,7 +71,7 @@ namespace Repository.Repositories
                     }
                 }
 
-                _context.Save(); // שמירה במסד
+                await _context.SaveAsync(); // שמירה במסד
             }
         }
     }

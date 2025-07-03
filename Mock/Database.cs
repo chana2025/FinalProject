@@ -1,18 +1,11 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Repository.Entities;
 using Repository.Interfaces;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-
-
-
 
 namespace Mock
 {
-    public class Database:DbContext ,IContext
+    public class Database : DbContext, IContext
     {
         public DbSet<Customer> Customers { get; set; }
         public DbSet<DietType> DietTypes { get; set; }
@@ -28,7 +21,7 @@ namespace Mock
                 .HasOne(p => p.Customer)
                 .WithMany(c => c.FoodPreferences)
                 .HasForeignKey(p => p.CustomerId)
-                .OnDelete(DeleteBehavior.Cascade); // אופציונלי - למחוק העדפות כשנמחק לקוח
+                .OnDelete(DeleteBehavior.Cascade); // למחוק העדפות כשנמחק לקוח
 
             // קשר בין Product ל־CustomerFoodPreference
             modelBuilder.Entity<CustomerFoodPreference>()
@@ -42,12 +35,14 @@ namespace Mock
             SaveChanges();
         }
 
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        public async Task SaveAsync()
         {
-
-            optionsBuilder.UseSqlServer("Server=DESKTOP-1VUANBN;Database=DietSC2;Trusted_Connection=True;TrustServerCertificate=True;");
+            await SaveChangesAsync();
         }
 
-       
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            optionsBuilder.UseSqlServer("Server=DESKTOP-1VUANBN;Database=DietSC1;Trusted_Connection=True;TrustServerCertificate=True;");
+        }
     }
 }

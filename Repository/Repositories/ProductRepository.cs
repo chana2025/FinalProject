@@ -1,40 +1,40 @@
 ﻿using Repository.Entities;
 using Repository.Interfaces;
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore; // כדי להשתמש ב-ToListAsync וכו'
 
 public class ProductRepository : IRepository<Product>
 {
     private readonly IContext _context;
     public ProductRepository(IContext context) => _context = context;
 
-    public Product AddItem(Product item)
+    public async Task<Product> AddItemAsync(Product item)
     {
-        _context.Products.Add(item);
-        _context.Save();
+        await _context.Products.AddAsync(item);
+        await _context.SaveAsync();
         return item;
     }
 
-    public void DeleteItem(int id)
+    public async Task DeleteItemAsync(int id)
     {
-        var product = GetById(id);
+        var product = await GetByIdAsync(id);
         if (product != null)
         {
             _context.Products.Remove(product);
-            _context.Save();
+            await _context.SaveAsync();
         }
     }
 
-    public List<Product> GetAll() => _context.Products.ToList();
+    public async Task<List<Product>> GetAllAsync() => await _context.Products.ToListAsync();
 
-    public Product GetById(int id) => _context.Products.FirstOrDefault(p => p.ProductId == id);
+    public async Task<Product> GetByIdAsync(int id) =>
+        await _context.Products.FirstOrDefaultAsync(p => p.ProductId == id);
 
-    public void UpdateItem(int id, Product item)
+    public async Task UpdateItemAsync(int id, Product item)
     {
-        var p = GetById(id);
+        var p = await GetByIdAsync(id);
         if (p != null)
         {
             p.Name = item.Name;
@@ -43,8 +43,7 @@ public class ProductRepository : IRepository<Product>
             p.Fat = item.Fat;
             p.Carbohydrates = item.Carbohydrates;
             p.SourceApi = item.SourceApi;
-            _context.Save();
+            await _context.SaveAsync();
         }
     }
 }
-

@@ -12,10 +12,15 @@ namespace Repository.Entities
     {
         [Key]
         public int Id { get; set; }
-        public string ProdName { get; set; }
+
         public int DietTypeId { get; set; }
-        [ForeignKey("dietTypeCode")]
-        public DietType DietTypeCode { get; set; }
-        //public Product ProductId { get; set; }צריך להתקשר לטבלת מוצרים המוכנה
+        [ForeignKey(nameof(DietTypeId))]
+        public DietType DietType { get; set; }
+
+        public int ProductId { get; set; }
+        [ForeignKey(nameof(ProductId))]
+        public Product Product { get; set; }
+
+        public bool IsAllowed { get; set; }
     }
 }

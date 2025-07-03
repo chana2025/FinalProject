@@ -3,8 +3,8 @@ using Repository.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore; // נדרש עבור ToListAsync, FirstOrDefaultAsync
 
 namespace Repository.Repositories
 {
@@ -16,32 +16,37 @@ namespace Repository.Repositories
         {
             this._context = context;
         }
-        public DietType AddItem(DietType item)
+
+        public async Task<DietType> AddItemAsync(DietType item)
         {
-            this._context.DietTypes.Add(item);
-            this._context.Save();
+            await _context.DietTypes.AddAsync(item);
+            await _context.SaveAsync();
             return item;
         }
 
-        public void DeleteItem(int id)
+        public async Task DeleteItemAsync(int id)
         {
-            this._context.DietTypes.Remove(GetById(id));
-            this._context.Save();
+            var entity = await GetByIdAsync(id);
+            if (entity == null) 
+                return; // או לזרוק חריגה אם תרצה
+
+            _context.DietTypes.Remove(entity);
+            await _context.SaveAsync();
         }
 
-        public List<DietType> GetAll()
+        public async Task<List<DietType>> GetAllAsync()
         {
-            return _context.DietTypes.ToList();
+            return await _context.DietTypes.ToListAsync();
         }
 
-        public DietType GetById(int id)
+        public async Task<DietType?> GetByIdAsync(int id)
         {
-            return _context.DietTypes.FirstOrDefault(x => x.Id.Equals(id));
+            return await _context.DietTypes.FirstOrDefaultAsync(x => x.Id == id);
         }
 
-        public void UpdateItem(int id, DietType item)
+        public async Task UpdateItemAsync(int id, DietType item)
         {
-            var existing = GetById(id);
+            var existing = await GetByIdAsync(id);
             if (existing == null) return;
 
             existing.DietName = item.DietName;
@@ -53,13 +58,11 @@ namespace Repository.Repositories
             existing.ImageUrl = item.ImageUrl;
 
             // נעדכן רק את TimeMealsString – זה שמישמר במסד
-          
 
             // ⚠️ לא נעדכן Customers – אלא אם באמת יש צורך, וגם אז בזהירות עם Tracking
             // existing.Customers = item.Customers;
 
-            _context.Save();
+            await _context.SaveAsync();
         }
-
     }
 }

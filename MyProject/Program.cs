@@ -8,9 +8,13 @@ using Service;
 using Common.Dto;
 using System.Text;
 using Repository.Entities;
-using Repository.Reposetories;
 using Repository.Repositories;
 using Service.Services;
+using Microsoft.Extensions.FileProviders;
+
+//var v = new Database();
+//GreedyAlg f = new GreedyAlg(v);
+//f.GetDietType();
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -76,6 +80,7 @@ builder.Services.AddScoped<IContext, Database>();
 builder.Services.AddDbContext<Database>(); // ✅ אם Database הוא DbContext, רשום אותו גם כ-DbContext
 //builder.Services.AddScoped<IProductApiService, ProductApiService>();
 builder.Services.AddHttpClient<IProductApiService, ProductApiService>();
+builder.Services.AddScoped<GreedyAlg>();
 
 // ✅ Authentication
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -112,6 +117,12 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new PhysicalFileProvider(
+        Path.Combine(Directory.GetCurrentDirectory(), "Images")),
+    RequestPath = "/images"
+});
 
 app.UseHttpsRedirection();
 app.UseCors(MyAllowSpecificOrigins);

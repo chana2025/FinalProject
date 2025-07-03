@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Repository.Entities;
 using Service.Interfaces;
 using System.IO;
-using System.Linq;
+using System.Threading.Tasks;
 
 namespace MyProject.Controllers
 {
@@ -19,7 +19,7 @@ namespace MyProject.Controllers
         }
 
         [HttpPost]
-        public IActionResult Post([FromForm] SignUpDto signUpDto)
+        public async Task<IActionResult> Post([FromForm] SignUpDto signUpDto)
         {
             if (signUpDto == null)
                 return BadRequest("Invalid sign-up data.");
@@ -35,7 +35,6 @@ namespace MyProject.Controllers
                 signUpDto.Weight = 0;
             }
 
-            // שמירת התמונה בתיקיה והכנת המערך בייטים
             byte[]? imageBytes = null;
             if (signUpDto.FileImage != null && signUpDto.FileImage.Length > 0)
             {
@@ -47,17 +46,16 @@ namespace MyProject.Controllers
 
                 using (var stream = new FileStream(imagePath, FileMode.Create))
                 {
-                    signUpDto.FileImage.CopyTo(stream);
+                    await signUpDto.FileImage.CopyToAsync(stream);
                 }
 
                 using (var ms = new MemoryStream())
                 {
-                    signUpDto.FileImage.CopyTo(ms);
+                    await signUpDto.FileImage.CopyToAsync(ms);
                     imageBytes = ms.ToArray();
                 }
             }
 
-            // יצירת CustomerDto
             var customer = new CustomerDto
             {
                 FullName = signUpDto.FullName,
@@ -70,12 +68,11 @@ namespace MyProject.Controllers
                 ImagePath = imageBytes,
                 ImageUrl = $"{signUpDto.FullName}.jpg",
                 Gender = signUpDto.Gender,
-                LikedProductIds=signUpDto.LikedProductIds,
-                DislikedProductIds= signUpDto.DislikedProductIds
-
+                LikedProductIds = signUpDto.LikedProductIds,
+                DislikedProductIds = signUpDto.DislikedProductIds
             };
 
-            var addedCustomer = _service.AddItem(customer);
+            var addedCustomer = await _service.AddItemAsync(customer);
             if (addedCustomer == null)
                 return StatusCode(500, "Failed to add customer.");
 

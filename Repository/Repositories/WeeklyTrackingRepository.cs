@@ -1,10 +1,9 @@
 ﻿using Repository.Entities;
 using Repository.Interfaces;
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 
 namespace Repository.Repositories
 {
@@ -14,40 +13,47 @@ namespace Repository.Repositories
 
         public WeeklyTrackingRepository(IContext context)
         {
-            this._context = context;
+            _context = context;
         }
-        public WeeklyTracking AddItem(WeeklyTracking item)
+
+        public async Task<WeeklyTracking> AddItemAsync(WeeklyTracking item)
         {
-            this._context.WeeklyTrackings.Add(item);
-            this._context.Save();
+            await _context.WeeklyTrackings.AddAsync(item);
+            await _context.SaveAsync();
             return item;
         }
 
-        public void DeleteItem(int id)
+        public async Task DeleteItemAsync(int id)
         {
-            this._context.WeeklyTrackings.Remove(GetById(id));
-            this._context.Save();
+            var entity = await GetByIdAsync(id);
+            if (entity == null) return;
+
+            _context.WeeklyTrackings.Remove(entity);
+            await _context.SaveAsync();
         }
 
-        public List<WeeklyTracking> GetAll()
+        public async Task<List<WeeklyTracking>> GetAllAsync()
         {
-            return _context.WeeklyTrackings.ToList();
+            return await _context.WeeklyTrackings.ToListAsync();
         }
 
-        public WeeklyTracking GetById(int id)
+        public async Task<WeeklyTracking> GetByIdAsync(int id)
         {
-            return _context.WeeklyTrackings.FirstOrDefault(x => x.Id.Equals(id));
+            return await _context.WeeklyTrackings.FirstOrDefaultAsync(x => x.Id == id);
         }
 
-        public void UpdateItem(int id, WeeklyTracking item)
+        public async Task UpdateItemAsync(int id, WeeklyTracking item)
         {
-            var WeeklyTracking = GetById(id);
-            WeeklyTracking.CustId = item.CustId;
-            WeeklyTracking.WeekDate = item.WeekDate;
-            WeeklyTracking.IsPassCalories = item.IsPassCalories;
-            WeeklyTracking. UpdatdedWieght = item.UpdatdedWieght;
-            _context.Save();
-            //לבדק אם זה באמת כל הפרופרטי
+            var existing = await GetByIdAsync(id);
+            if (existing == null) return;
+
+            existing.CustId = item.CustId;
+            existing.WeekDate = item.WeekDate;
+            existing.IsPassCalories = item.IsPassCalories;
+            existing.UpdatdedWieght = item.UpdatdedWieght;
+            // יש לוודא שעדכנת כאן את כל השדות הרלוונטיים
+
+            await _context.SaveAsync();
         }
     }
 }

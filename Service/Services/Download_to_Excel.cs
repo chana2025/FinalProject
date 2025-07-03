@@ -20,7 +20,6 @@ namespace Service.Services
 
             // === השאילתה לשליפת הנתונים מהטבלה Product ===
             string query = "SELECT * FROM Products"; // תוכל לשנות כאן עמודות ספציפיות אם צריך
-
             try
             {
                 using (SqlConnection conn = new SqlConnection(connectionString))

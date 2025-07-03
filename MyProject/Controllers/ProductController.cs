@@ -24,11 +24,12 @@ namespace MyProject.Controllers
         }
 
         [HttpGet]
-        public ActionResult<List<ProductDto>> Get()
+        public async Task<ActionResult<List<ProductDto>>> Get()
         {
             try
             {
-                return Ok(_service.GetAll());
+                var products = await _service.GetAllAsync();
+                return Ok(products);
             }
             catch (Exception ex)
             {
@@ -37,11 +38,11 @@ namespace MyProject.Controllers
         }
 
         [HttpGet("{id}")]
-        public ActionResult<ProductDto> Get(int id)
+        public async Task<ActionResult<ProductDto>> Get(int id)
         {
             try
             {
-                var product = _service.GetById(id);
+                var product = await _service.GetByIdAsync(id);
                 if (product == null)
                     return NotFound($"Product with ID {id} not found");
 
@@ -54,14 +55,14 @@ namespace MyProject.Controllers
         }
 
         [HttpGet("search")]
-        public ActionResult<List<ProductDto>> SearchProducts([FromQuery] string name)
+        public async Task<ActionResult<List<ProductDto>>> SearchProducts([FromQuery] string name)
         {
             try
             {
                 if (string.IsNullOrWhiteSpace(name))
                     return BadRequest("שם המוצר לחיפוש אינו יכול להיות ריק.");
 
-                var products = _service.GetByName(name);
+                var products = await _service.GetByNameAsync(name);
                 if (products == null || products.Count == 0)
                     return NotFound($"לא נמצאו מוצרים המכילים את השם '{name}'.");
 
@@ -75,11 +76,11 @@ namespace MyProject.Controllers
 
         [HttpPost]
         [Authorize(Roles = "ADMIN")]
-        public ActionResult<ProductDto> Post([FromForm] ProductDto product)
+        public async Task<ActionResult<ProductDto>> Post([FromForm] ProductDto product)
         {
             try
             {
-                var created = _service.AddItem(product);
+                var created = await _service.AddItemAsync(product);
                 return CreatedAtAction(nameof(Get), new { id = created.ProductId }, created);
             }
             catch (Exception ex)
@@ -90,14 +91,14 @@ namespace MyProject.Controllers
 
         [HttpPut("{id}")]
         [Authorize(Roles = "ADMIN")]
-        public IActionResult Put(int id, [FromForm] ProductDto product)
+        public async Task<IActionResult> Put(int id, [FromForm] ProductDto product)
         {
             if (id != product.ProductId)
                 return BadRequest("ID mismatch");
 
             try
             {
-                _service.UpdateItem(id, product);
+                await _service.UpdateItemAsync(id, product);
                 return NoContent();
             }
             catch (Exception ex)
@@ -108,11 +109,11 @@ namespace MyProject.Controllers
 
         [HttpDelete("{id}")]
         [Authorize(Roles = "ADMIN")]
-        public IActionResult Delete(int id)
+        public async Task<IActionResult> Delete(int id)
         {
             try
             {
-                _service.DeleteItem(id);
+                await _service.DeleteItemAsync(id);
                 return NoContent();
             }
             catch (Exception ex)
@@ -128,7 +129,7 @@ namespace MyProject.Controllers
             try
             {
                 var productsFromApi = await _apiService.GetAllProductsAsync();
-                int added = await _service.SaveProductsFromApi(productsFromApi);
+                int added = await _service.SaveProductsFromApiAsync(productsFromApi);
                 return Ok($"{added} products were imported successfully.");
             }
             catch (Exception ex)
@@ -137,13 +138,12 @@ namespace MyProject.Controllers
             }
         }
 
-        // ✅ נקודת קצה להורדת המוצרים כקובץ Excel
         [HttpGet("download-excel")]
-        public IActionResult DownloadExcel()
+        public async Task<IActionResult> DownloadExcel()
         {
             try
             {
-                var products = _service.GetAll();
+                var products = await _service.GetAllAsync();
 
                 using var workbook = new XLWorkbook();
                 var worksheet = workbook.Worksheets.Add("Products");

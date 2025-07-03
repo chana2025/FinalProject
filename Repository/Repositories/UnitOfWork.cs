@@ -1,11 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
+﻿using System.Threading.Tasks;
 using Repository.Interfaces;
-
 
 namespace Repository.Repositories
 {
@@ -21,9 +15,11 @@ namespace Repository.Repositories
             FoodPreferenceRepository = foodPreferenceRepository;
         }
 
-        public void Save()
+        public async Task SaveAsync()
         {
-            _context.Save();
+            await _context.SaveAsync();
         }
+
+       
     }
 }

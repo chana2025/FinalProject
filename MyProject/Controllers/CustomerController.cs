@@ -9,30 +9,31 @@ using System;
 using Repository.Entities;
 using Service.Services;
 using Microsoft.AspNetCore.Http;
+using System.Collections.Generic;
 
 namespace MyProject.Controllers
 {
-    //אחראי לקבל בקשות,עיבוד והחזרת תגובה ללקוח-מפנה לניתוב הנכון
     [Route("api/[controller]")]
     [ApiController]
     public class CustomerController : ControllerBase
     {
         private readonly IService<CustomerDto> _service;
         private readonly IFileUploadService _fileUploadService;
+
         public CustomerController(IService<CustomerDto> service, IFileUploadService fileUploadService)
         {
             _service = service;
             _fileUploadService = fileUploadService;
         }
 
-        // שליפת כל הלקוחות
+        // שליפת כל הלקוחות - אסינכרונית
         [HttpGet]
         [Authorize(Roles = "ADMIN, WORKER")]
-        public ActionResult<List<CustomerDto>> Get()
+        public async Task<ActionResult<List<CustomerDto>>> Get()
         {
             try
             {
-                var customers = _service.GetAll();
+                var customers = await _service.GetAllAsync();
                 return Ok(customers);
             }
             catch (Exception ex)
@@ -41,14 +42,14 @@ namespace MyProject.Controllers
             }
         }
 
-        // שליפת לקוח לפי מזהה (string id)
+        // שליפת לקוח לפי מזהה (int id) - אסינכרונית
         [HttpGet("{id}")]
         [Authorize]
-        public ActionResult<CustomerDto> Get(int id)
+        public async Task<ActionResult<CustomerDto>> Get(int id)
         {
             try
             {
-                var customer = _service.GetById(id);
+                var customer = await _service.GetByIdAsync(id);
                 if (customer == null)
                     return NotFound($"Customer with id {id} not found.");
 
@@ -60,10 +61,9 @@ namespace MyProject.Controllers
             }
         }
 
-        //// הוספת לקוח חדש (כולל אפשרות להעלות תמונה)
-        ///נחבר לsignup ב react
+        // הוספת לקוח חדש (כולל אפשרות להעלות תמונה) - אסינכרונית
         //[HttpPost]
-        //[Authorize(Roles = "ADMIN")]    
+        //[Authorize(Roles = "ADMIN")]
         //public async Task<ActionResult<CustomerDto>> Post([FromForm] CustomerCreateRequest request)
         //{
         //    if (request == null)
@@ -72,39 +72,36 @@ namespace MyProject.Controllers
         //    string imagePath = null;
         //    if (request.Image != null && request.Image.Length > 0)
         //    {
-        //       //  imagePath = await _fileUploadService.UploadImageAsync(formFile, "dietTypes");
-
+        //       imagePath = await _fileUploadService.UploadImageAsync(request.Image, "dietTypes");
         //    }
 
-        //    CustomerCreateRequest request1 = request;
         //    var customerDto = new CustomerDto
         //    {
         //        Id = request.Id,
-        //        FullName=request.FullName,
+        //        FullName = request.FullName,
         //        Email = request.Email,
         //        Phone = request.Phone,
         //        Height = request.Height,
         //        Weight = request.Weight,
         //        Role = request.Role,
-        //        //DietType = new DietType(),
-        //        //ImagePath = imagePath
+        //        ImagePath = imagePath
         //    };
 
-        //    var createdCustomer = _service.AddItem(customerDto);
+        //    var createdCustomer = await _service.AddItemAsync(customerDto);
         //    return CreatedAtAction(nameof(Get), new { id = createdCustomer.Id }, createdCustomer);
         //}
 
-        // עדכון לקוח קיים
+        // עדכון לקוח קיים - אסינכרוני
         [HttpPut("{id}")]
         [Authorize(Roles = "ADMIN")]
-        public IActionResult Put(int id, [FromForm] CustomerDto customerDto)
+        public async Task<IActionResult> Put(int id, [FromForm] CustomerDto customerDto)
         {
             if (id != customerDto.Id)
                 return BadRequest("ID mismatch.");
 
             try
             {
-                _service.UpdateItem(id, customerDto);
+                await _service.UpdateItemAsync(id, customerDto);
                 return NoContent();
             }
             catch (Exception ex)
@@ -113,14 +110,14 @@ namespace MyProject.Controllers
             }
         }
 
-        // מחיקת לקוח
+        // מחיקת לקוח - אסינכרוני
         [HttpDelete("{id}")]
         [Authorize(Roles = "ADMIN")]
-        public IActionResult Delete(int id)
+        public async Task<IActionResult> Delete(int id)
         {
             try
             {
-                _service.DeleteItem(id);
+                await _service.DeleteItemAsync(id);
                 return NoContent();
             }
             catch (Exception ex)
@@ -130,9 +127,9 @@ namespace MyProject.Controllers
         }
 
         [HttpGet("image/{id}")]
-        public IActionResult GetCustomerImage(int id)
+        public async Task<IActionResult> GetCustomerImage(int id)
         {
-            var customer = _service.GetById(id);
+            var customer = await _service.GetByIdAsync(id);
             if (customer == null || customer.ImagePath == null)
                 return NotFound();
 
@@ -148,37 +145,5 @@ namespace MyProject.Controllers
 
             return File(customer.ImagePath, mimeType);
         }
-
-
-
-        // פונקציה להעלאת קובץ תמונה
-        //private async Task<string> UploadImage(IFormFile file)
-        //{
-        //    var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "Images");
-        //    if (!Directory.Exists(uploadsFolder))
-        //    {
-        //        Directory.CreateDirectory(uploadsFolder);
-        //    }
-
-        //    var uniqueFileName = $"{Guid.NewGuid()}_{file.FileName}";
-        //    var filePath = Path.Combine(uploadsFolder, uniqueFileName);
-
-        //    using (var stream = new FileStream(filePath, FileMode.Create))
-        //    {
-        //        await file.CopyToAsync(stream);
-        //    }
-
-        //    return $"/Images/{uniqueFileName}";
-        //}
-
-        //// פונקציה להמיר מזהים לדיאט
-        //private List<DietType> GetDietTypeFromFoodIds(List<int> foodIds)
-        //{
-        //    // חיפוש בדיאטות המתאימות לפי כל מזהי האוכל
-        //    var dietTypes = _service.DietTypes.Where(d => foodIds.Contains(d.Id)).ToList();
-        //    return dietTypes;
-        //}
-
-
     }
 }

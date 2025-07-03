@@ -18,6 +18,7 @@ namespace Repository.Entities
         public DateTime WeekDate { get; set; }
         public double UpdatdedWieght { get; set; }
         public bool IsPassCalories { get; set; }
+        public int? ConsumedCalories { get; set; }
 
     }
 }

@@ -1,23 +1,20 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Repository.Entities;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System.Threading.Tasks;
 
 namespace Repository.Interfaces
 {
-    public interface IContext 
+    public interface IContext
     {
-        public DbSet<Customer> Customers { get; set; }
-        public DbSet<DietType> DietTypes { get; set; }
-        public DbSet<WeeklyTracking> WeeklyTrackings { get; set; }
-        public DbSet<ProductForDietType> ProductForDietTypes { get; set; }
-        public DbSet<Product> Products { get; set; }
-        public DbSet<CustomerFoodPreference> CustomerFoodPreferences { get; set; }
+        DbSet<Customer> Customers { get; set; }
+        DbSet<DietType> DietTypes { get; set; }
+        DbSet<WeeklyTracking> WeeklyTrackings { get; set; }
+        DbSet<ProductForDietType> ProductForDietTypes { get; set; }
+        DbSet<Product> Products { get; set; }
+        DbSet<CustomerFoodPreference> CustomerFoodPreferences { get; set; }
 
-        public void Save();
-
-
+        void Save();
+        Task SaveAsync(); // ⬅️ הוספה זו מאפשרת שימוש ב-Await במאגר
     }
 }
