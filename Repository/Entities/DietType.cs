@@ -19,6 +19,8 @@ namespace Repository.Entities
         public virtual ICollection<Customer> Customers { get; set; }
 //public virtual ICollection<ProductForDietType> ProductForDietTypes { get; set; }
         public string? ImageUrl { get; set; }
+        public string? Description { get; set; }     
+        public string? SampleMenu { get; set; }
 
     }
 }

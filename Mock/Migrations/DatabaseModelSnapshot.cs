@@ -74,6 +74,21 @@ namespace Mock.Migrations
                     b.ToTable("Customers");
                 });
 
+            modelBuilder.Entity("Repository.Entities.CustomerDiet", b =>
+                {
+                    b.Property<int>("CustomerId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("DietId")
+                        .HasColumnType("int");
+
+                    b.HasKey("CustomerId", "DietId");
+
+                    b.HasIndex("DietId");
+
+                    b.ToTable("CustomerDiet");
+                });
+
             modelBuilder.Entity("Repository.Entities.CustomerFoodPreference", b =>
                 {
                     b.Property<int>("Id")
@@ -119,6 +134,9 @@ namespace Mock.Migrations
                     b.Property<double?>("Carbohydrates")
                         .HasColumnType("float");
 
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("DietName")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -131,6 +149,9 @@ namespace Mock.Migrations
 
                     b.Property<double?>("Protein")
                         .HasColumnType("float");
+
+                    b.Property<string>("SampleMenu")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("SpecialComments")
                         .HasColumnType("nvarchar(max)");
@@ -235,6 +256,25 @@ namespace Mock.Migrations
                         .HasForeignKey("DietId");
 
                     b.Navigation("DietType");
+                });
+
+            modelBuilder.Entity("Repository.Entities.CustomerDiet", b =>
+                {
+                    b.HasOne("Repository.Entities.Customer", "Customer")
+                        .WithMany()
+                        .HasForeignKey("CustomerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Repository.Entities.DietType", "Diet")
+                        .WithMany()
+                        .HasForeignKey("DietId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Customer");
+
+                    b.Navigation("Diet");
                 });
 
             modelBuilder.Entity("Repository.Entities.CustomerFoodPreference", b =>

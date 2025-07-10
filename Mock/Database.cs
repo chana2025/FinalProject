@@ -13,6 +13,7 @@ namespace Mock
         public DbSet<WeeklyTracking> WeeklyTrackings { get; set; }
         public DbSet<Product> Products { get; set; }
         public DbSet<CustomerFoodPreference> CustomerFoodPreferences { get; set; }
+        public DbSet<CustomerDiet> CustomerDiet { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -28,6 +29,18 @@ namespace Mock
                 .HasOne(p => p.Product)
                 .WithMany()
                 .HasForeignKey(p => p.ProductId);
+            modelBuilder.Entity<CustomerDiet>()
+    .HasKey(cd => new { cd.CustomerId, cd.DietId });
+            modelBuilder.Entity<CustomerDiet>()
+                .HasOne(cd => cd.Customer)
+                .WithMany()
+                .HasForeignKey(cd => cd.CustomerId);
+
+            modelBuilder.Entity<CustomerDiet>()
+                .HasOne(cd => cd.Diet)
+                .WithMany()
+                .HasForeignKey(cd => cd.DietId);
+
         }
 
         public void Save()

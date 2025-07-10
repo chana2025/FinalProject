@@ -1,8 +1,8 @@
 ﻿using Common.Dto;
 using Microsoft.AspNetCore.Mvc;
-using Repository.Entities;
+using Repository.Entities; // ודא שקיים
 using Service.Interfaces;
-using System.IO;
+using System.IO; // ודא שקיים (אם כי לא נשתמש בו לשמירה ישירה)
 using System.Threading.Tasks;
 
 namespace MyProject.Controllers
@@ -35,27 +35,6 @@ namespace MyProject.Controllers
                 signUpDto.Weight = 0;
             }
 
-            byte[]? imageBytes = null;
-            if (signUpDto.FileImage != null && signUpDto.FileImage.Length > 0)
-            {
-                string imageDirectory = Path.Combine(Directory.GetCurrentDirectory(), "Images");
-                if (!Directory.Exists(imageDirectory))
-                    Directory.CreateDirectory(imageDirectory);
-
-                string imagePath = Path.Combine(imageDirectory, $"{signUpDto.FullName}.jpg");
-
-                using (var stream = new FileStream(imagePath, FileMode.Create))
-                {
-                    await signUpDto.FileImage.CopyToAsync(stream);
-                }
-
-                using (var ms = new MemoryStream())
-                {
-                    await signUpDto.FileImage.CopyToAsync(ms);
-                    imageBytes = ms.ToArray();
-                }
-            }
-
             var customer = new CustomerDto
             {
                 FullName = signUpDto.FullName,
@@ -65,18 +44,20 @@ namespace MyProject.Controllers
                 Email = signUpDto.Email,
                 Height = signUpDto.Height,
                 Weight = signUpDto.Weight,
-                ImagePath = imageBytes,
-                ImageUrl = $"{signUpDto.FullName}.jpg",
+                // ImagePath ו-ImageUrl לא מוגדרים כאן, כי הם יטופלו על ידי ה-Service
+                // ה-FileImage מועבר ישירות ל-Service שידאג להמרתו ל-byte[] ולשמירתו ב-DB.
+                FileImage = signUpDto.FileImage, // מעבירים את ה-IFormFile ישירות!
                 Gender = signUpDto.Gender,
                 LikedProductIds = signUpDto.LikedProductIds,
-                DislikedProductIds = signUpDto.DislikedProductIds
+                //DislikedProductIds = signUpDto.DislikedProductIds
             };
 
             var addedCustomer = await _service.AddItemAsync(customer);
             if (addedCustomer == null)
                 return StatusCode(500, "Failed to add customer.");
 
-            return Ok("Customer added successfully.");
+            // הוספה של CreatedAtAction במקום Ok פשוט כדי להיות RESTful יותר
+            return CreatedAtAction(nameof(CustomerController.Get), "Customer", new { id = addedCustomer.Id }, addedCustomer);
         }
     }
 }

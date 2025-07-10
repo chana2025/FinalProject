@@ -13,21 +13,10 @@ namespace Common.Dto
         public string ? SpecialComments { get; set; }
 
         public IFormFile? fileImage { get; set; } // התמונה שמועלת ע"י המשתמש
-       // public string? ImagePath { get; set; }    // הנתיב לתמונה כפי שנשמר
         public string? ImageUrl { get; set; } // במקום ImagePath
+        public string? Description { get; set; } 
+        public string? SampleMenu { get; set; }
 
 
-        // המרה מ-DietType ל-DietDto
-        //public static DietDto FromEntity(Repository.Entities.DietType dietType)
-        //{
-        //    return new DietDto
-        //    {
-        //        DietId = dietType.Id,
-        //        DietName = dietType.NameDiet,
-        //        MealsPerDay = dietType.NumMeal,
-        //        DailyCalories = dietType.NumCalories,
-        //        SpecialNotes = dietType.SpecialComments
-        //    };
-        //}
     }
 }

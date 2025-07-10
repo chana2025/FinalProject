@@ -16,7 +16,7 @@ namespace Common.Dto
         public double? Weight { get; set; }
 
         // התמונה עצמה (לשימוש ב-API שרוצה להחזיר אותה כ-base64 או File)
-        public byte[]? ImagePath { get; set; }
+        public string ImagePath { get; set; }
 
         // שם הקובץ או הנתיב (אם נשמרה פיזית בתיקייה, לדוג' /images/user1.jpg)
         public string? ImageUrl { get; set; }

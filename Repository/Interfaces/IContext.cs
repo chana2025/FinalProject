@@ -13,6 +13,7 @@ namespace Repository.Interfaces
         DbSet<ProductForDietType> ProductForDietTypes { get; set; }
         DbSet<Product> Products { get; set; }
         DbSet<CustomerFoodPreference> CustomerFoodPreferences { get; set; }
+        DbSet<CustomerDiet> CustomerDiet { get; set; }
 
         void Save();
         Task SaveAsync(); // ⬅️ הוספה זו מאפשרת שימוש ב-Await במאגר

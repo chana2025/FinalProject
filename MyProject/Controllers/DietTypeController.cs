@@ -1,5 +1,4 @@
 ﻿using Common.Dto;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Service.Interfaces;
 using Service.Services;
@@ -40,6 +39,7 @@ namespace MyProject.Controllers
         }
 
         // GET: api/DietType/5
+        // מחזיר את הדיאטה עם הסברים, המלצות ודוגמאות לפי שם הדיאטה
         [HttpGet("{id}")]
         public async Task<ActionResult<DietDto>> Get(int id)
         {
@@ -56,6 +56,7 @@ namespace MyProject.Controllers
                 return StatusCode(500, $"Internal server error: {ex.Message}");
             }
         }
+
 
         // POST: api/DietType
         [HttpPost]
@@ -129,6 +130,66 @@ namespace MyProject.Controllers
             catch (Exception ex)
             {
                 return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+        }
+
+        // פונקציה פנימית להחזרת הסבר ודוגמאות לפי שם דיאטה
+        private object GetDietExplanation(string dietName)
+        {
+            switch (dietName.ToLower())
+            {
+                case "keto":
+                    return new
+                    {
+                        Overview = "תפריט קטוגני (Keto) מתבסס על מזון עתיר שומן ודל פחמימות, כדי להכניס את הגוף למצב של קטוזיס.",
+                        Recommendations = new[] {
+                            "העדיפי אבוקדו, שמן קוקוס, אגוזים, ביצים, גבינות שמנות, עוף ודגים.",
+                            "הימנעי מלחמים, סוכר, פסטה, אורז ותפוחי אדמה."
+                        },
+                        SampleMenu = new[] {
+                            "בוקר: חביתה עם אבוקדו וגבינה צהובה",
+                            "צהריים: עוף בגריל עם סלט ירוק עשיר בשמן זית",
+                            "ערב: סלמון בתנור עם ברוקולי מאודה"
+                        }
+                    };
+
+                case "points diet":
+                    return new
+                    {
+                        Overview = "בדיאטת הנקודות אין איסורים – רק ספירת נקודות על בסיס כמות ואיכות.",
+                        Recommendations = new[] {
+                            "הכירי את מספר הנקודות המותר ביום לפי משקל/גובה.",
+                            "בחרי מאכלים בעלי ערך תזונתי גבוה וערך נקודות נמוך."
+                        },
+                        SampleMenu = new[] {
+                            "בוקר: יוגורט עם גרנולה (2 נקודות)",
+                            "ביניים: תפוח (1 נקודה)",
+                            "צהריים: חזה עוף עם אורז מלא וירקות (5 נקודות)"
+                        }
+                    };
+
+                case "high carb":
+                    return new
+                    {
+                        Overview = "דיאטה עשירה בפחמימות – מתאימה לספורטאים או אנשים עם חילוף חומרים מהיר.",
+                        Recommendations = new[] {
+                            "שלבי פחמימות איכותיות: קוואקר, בטטה, פירות, אורז מלא.",
+                            "שמרי על איזון עם חלבון ודאגי לשתייה מרובה."
+                        },
+                        SampleMenu = new[] {
+                            "בוקר: דייסת שיבולת שועל עם בננה",
+                            "צהריים: פסטה מחיטה מלאה עם רוטב עגבניות",
+                            "ערב: סנדוויץ' מלחם מלא עם טונה"
+                        }
+                    };
+
+                default:
+                    return new
+                    {
+                        Overview = "אין מידע נוסף על הדיאטה הזו כרגע.",
+                        Recommendations = new string[] { },
+                        SampleMenu = new string[] { }
+                    };
             }
         }
     }
