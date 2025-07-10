@@ -69,7 +69,7 @@ namespace Service
                 // כאשר ממפים מ-Customer (שדה ImagePath הוא byte[]) ל-CustomerDto (שדה ImagePath הוא string),
                 // אנו רוצים להתעלם מהמיפוי האוטומטי כאן. 
                 // הלוגיקה של המרת byte[] ל-Base64 String מתבצעת באופן מפורש ב-CustomerService.
-                .ForMember(dest => dest.ImagePath, opt => opt.Ignore())
+                //.ForMember(dest => dest.ImagePath, opt => opt.Ignore())
                 // גם את FileImage (IFormFile) אנו מתעלמים, כי הוא רלוונטי רק לכיוון Dto -> Entity
                 .ForMember(dest => dest.FileImage, opt => opt.Ignore())
                 // מיפוי של FoodPreferences לרשימות ה-IDs
